@@ -1,0 +1,8 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+  display: flex;
+  flex-basis: auto;
+  height: 450px;
+  justify-content: center;
+}
