@@ -1,17 +1,19 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import axios from 'axios';
-import Spinner from '@/components/Spinner';
+"use client";
 
-export default function VerificationCode() {
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import axios from "axios";
+import Spinner from "@/components/Spinner";
+
+function VerificationCodeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [otp, setOtp] = useState(['', '', '', '']);
+  const [otp, setOtp] = useState(["", "", "", ""]);
   const [signupData, setSignupData] = useState({});
   const [loading, setLoading] = useState(false);
 
+  // ✅ Extract params safely
   useEffect(() => {
     const data = {};
     for (const key of searchParams.keys()) {
@@ -19,8 +21,8 @@ export default function VerificationCode() {
     }
 
     if (!data.email) {
-      alert('Email not found in URL.');
-      router.push('/signup');
+      alert("Email not found in URL.");
+      router.push("/signup");
       return;
     }
 
@@ -43,10 +45,10 @@ export default function VerificationCode() {
 
   const handleVerify = async (e) => {
     e.preventDefault();
-    const fullOtp = otp.join('');
+    const fullOtp = otp.join("");
 
     if (fullOtp.length !== 4) {
-      alert('Please enter a 4-digit OTP.');
+      alert("Please enter a 4-digit OTP.");
       return;
     }
 
@@ -57,12 +59,14 @@ export default function VerificationCode() {
         otp: fullOtp,
       };
 
-      await axios.post('https://dermatology-backend-8xqf.onrender.com/api/auth/verify-otp', payload);
+      await axios.post(
+        "https://dermatology-backend-8xqf.onrender.com/api/auth/verify-otp",
+        payload
+      );
 
-      //alert('OTP verified successfully! Your account is created.');
-      router.push('/login');
+      router.push("/login");
     } catch (err) {
-      alert(err.response?.data?.error || 'OTP verification failed.');
+      alert(err.response?.data?.error || "OTP verification failed.");
     } finally {
       setLoading(false);
     }
@@ -70,13 +74,18 @@ export default function VerificationCode() {
 
   return (
     <div className="relative">
-      <div className={`bg-white w-full min-h-screen flex flex-col justify-center items-center py-16 ${loading ? 'blur-sm' : ''}`}>
+      <div
+        className={`bg-white w-full min-h-screen flex flex-col justify-center items-center py-16 ${
+          loading ? "blur-sm" : ""
+        }`}
+      >
         <span className="text-center sm:text-5xl text-3xl font-semibold text-black my-8">
           Verification Code
         </span>
 
         <span className="font-normal text-center text-lg text-black">
-          We have sent a verification code to your email: <strong>{signupData.email}</strong>
+          We have sent a verification code to your email:{" "}
+          <strong>{signupData.email}</strong>
         </span>
 
         <form
@@ -104,11 +113,11 @@ export default function VerificationCode() {
             type="submit"
             disabled={loading}
             className={`w-full sm:w-auto font-bold text-base sm:text-lg md:text-xl h-[45px] sm:h-[49px] rounded-[7px] px-4 sm:px-6 py-2.5 font-poppins transform transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-300/50 min-w-[120px] bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] hover:from-[#4a7a3a] hover:to-[#3d6330] relative overflow-hidden group mt-6 text-[#ffffff] ${
-              loading ? 'opacity-50 cursor-not-allowed' : ''
+              loading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
             <span className="relative z-10">
-              {loading ? <Spinner /> : 'Verify OTP'}
+              {loading ? <Spinner /> : "Verify OTP"}
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-600/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
           </button>
@@ -122,5 +131,14 @@ export default function VerificationCode() {
         </div>
       )}
     </div>
+  );
+}
+
+// ✅ Wrap inside Suspense for Next.js App Router
+export default function VerificationCodePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VerificationCodeContent />
+    </Suspense>
   );
 }
