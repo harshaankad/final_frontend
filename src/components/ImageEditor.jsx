@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-export default function ImageEditor() {
+export default function ImageEditor({ imageUrl, onEditComplete }) {
   const canvasRef = useRef(null);
   const [color, setColor] = useState('#000000');
   const [isDrawing, setIsDrawing] = useState(false);
@@ -11,20 +11,34 @@ export default function ImageEditor() {
   const [currentPos, setCurrentPos] = useState({ x: 0, y: 0 });
   const [backgroundImage, setBackgroundImage] = useState(null);
   const [shapes, setShapes] = useState([]);
-
-  const imageUrl =
-    'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&w=600&q=80';
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageDimensions, setImageDimensions] = useState({ width: 400, height: 400 });
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !imageUrl) return;
 
     const ctx = canvas.getContext('2d');
     const img = new Image();
     img.crossOrigin = 'anonymous';
 
     img.onload = () => {
+      // Set canvas dimensions to match image dimensions
+      const { naturalWidth, naturalHeight } = img;
+      setImageDimensions({ width: naturalWidth, height: naturalHeight });
+      
+      canvas.width = naturalWidth;
+      canvas.height = naturalHeight;
+      
       setBackgroundImage(img);
+      setImageLoaded(true);
+      // Draw the image at its original size
+      ctx.drawImage(img, 0, 0, naturalWidth, naturalHeight);
+    };
+
+    img.onerror = (error) => {
+      console.error('Error loading image:', error);
+      setImageLoaded(false);
     };
 
     img.src = imageUrl;
@@ -60,7 +74,7 @@ export default function ImageEditor() {
   const drawAll = (ctx) => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     if (backgroundImage) {
-      ctx.drawImage(backgroundImage, 0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.drawImage(backgroundImage, 0, 0, imageDimensions.width, imageDimensions.height);
     }
 
     shapes.forEach((shape) => {
@@ -82,7 +96,7 @@ export default function ImageEditor() {
     if (!canvas || !backgroundImage) return;
     const ctx = canvas.getContext('2d');
     drawAll(ctx);
-  }, [shapes, backgroundImage]);
+  }, [shapes, backgroundImage, imageDimensions]);
 
   const handleMouseDown = (e) => {
     const canvas = canvasRef.current;
@@ -153,20 +167,57 @@ export default function ImageEditor() {
     setShapes([]);
   };
 
-  return (
-    <div className="max-w-4xl w-full mx-auto">
-      <div className="flex flex-col items-center gap-4 p-4">
-        <canvas
-          ref={canvasRef}
-          width={400}
-          height={400}
-          className="border-2 border-gray-300 cursor-crosshair"
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-        />
+  // Function to save the edited image
+  const saveEditedImage = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-        <div className="w-[400px] flex flex-wrap justify-center gap-4 items-center">
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const timestamp = Date.now();
+        const file = new File([blob], `edited_image_${timestamp}.png`, { 
+          type: 'image/png',
+          lastModified: timestamp
+        });
+        console.log('Created file:', file);
+        console.log('File details:', {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          lastModified: file.lastModified
+        });
+        
+        if (onEditComplete) {
+          onEditComplete(file);
+        }
+      }
+    }, 'image/png', 0.9);
+  };
+
+  if (!imageUrl) {
+    return (
+      <div className="flex items-center justify-center w-[400px] h-[400px] border-2 border-gray-300 bg-gray-100">
+        <p className="text-gray-500">No image provided</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-full w-full mx-auto">
+      <div className="flex flex-col items-center gap-4 p-4">
+        <div className="overflow-auto max-w-full max-h-[80vh] border-2 border-gray-300 bg-white">
+          <canvas
+            ref={canvasRef}
+            width={imageDimensions.width}
+            height={imageDimensions.height}
+            className="cursor-crosshair block"
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+          />
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-4 items-center max-w-full">
           <div className="flex items-center gap-2">
             <label className="text-lg text-[#242424] font-medium">Color:</label>
             <input
@@ -191,11 +242,36 @@ export default function ImageEditor() {
 
           <button
             onClick={clearCanvas}
-            className="bg-brandGreen text-white rounded font-semibold text-[20px] h-[40px] w-[120px] transition-transform hover:scale-105 hover:shadow-lg"
+            className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-[#EAFFF0] to-[#E0F9E6] text-[#242424] font-semibold text-base border-2 border-black rounded-[6px] transform transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-green-300/50 hover:border-black hover:bg-gradient-to-r hover:from-green-50 hover:to-green-100 min-w-[100px] h-[42px] relative overflow-hidden group"
           >
-            Clear
+            <span className="relative z-10">Clear</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-green-200/30 to-emerald-200/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+          </button>
+
+          <button
+            onClick={saveEditedImage}
+            disabled={!imageLoaded}
+            className={`w-full sm:w-auto font-semibold text-base sm:text-lg h-[40px] sm:h-[42px] rounded-[6px] px-4 py-2 transform transition-all duration-300 min-w-[100px] relative overflow-hidden group
+            ${imageLoaded ? 'bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] hover:from-[#4a7a3a] hover:to-[#3d6330] hover:scale-105 hover:shadow-xl hover:shadow-green-300/50' : 'bg-gray-400 cursor-not-allowed'}`}
+          >
+            <span className="relative z-10">Save</span>
+            {imageLoaded && (
+              <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-600/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+            )}
           </button>
         </div>
+
+        {!imageLoaded && imageUrl && (
+          <div className="text-center text-gray-500">
+            <p>Loading image...</p>
+          </div>
+        )}
+
+        {imageLoaded && (
+          <div className="text-center text-gray-600 text-sm">
+            <p>Image dimensions: {imageDimensions.width} × {imageDimensions.height}</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -70,7 +70,7 @@ export default function Step4() {
       console.log("doctorId:", doctorId);
       console.log("patientId:", patientId);
 
-      const orderResponse = await fetch(`http://localhost:5000/api/create-payment`, {
+      const orderResponse = await fetch(`https://dermatology-backend-8xqf.onrender.com/api/create-payment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -110,7 +110,7 @@ export default function Step4() {
         handler: async (response) => {
           // Step 3: Verify payment on backend
           try {
-            const verifyResponse = await fetch(`http://localhost:5000/api/verify-payment`, {
+            const verifyResponse = await fetch(`https://dermatology-backend-8xqf.onrender.com/api/verify-payment`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -163,15 +163,7 @@ export default function Step4() {
         <Example />
       </div>
 
-      <div className="flex flex-row justify-start items-center w-full space-x-0 sm:space-x-10 py-6 pl-10 shadow-md">
-        <Link href="/">
-          <span className="ml-2 text-sm font-medium text-gray-400 p-2 sm:p-6 hover:text-green-800 hover:scale-105 transition-transform duration-200 ease-in-out sm:ml-40">Patients</span>
-        </Link>
-        <span className="text-gray-400 text-lg sm:text-xl px-2">•</span>
-        <Link href="/">
-          <span className="text-sm font-medium text-gray-400 p-2 sm:p-6 hover:text-green-800 hover:scale-125 duration-100 transition-transform ease-in-out">Add New Patient</span>
-        </Link>
-      </div>
+      
 
       <div className="flex flex-row items-center mt-14 space-x-4">
         <div className="hidden sm:block text-gray-400 font-semibold text-2xl pr-20">1 <span className="text-base">Basic Information</span></div>

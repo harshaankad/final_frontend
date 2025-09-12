@@ -14,19 +14,16 @@ export function ContextProvider({ children }) {
 
   // For Step 2 - Image Uploads
   const [nakedEyePhoto, setNakedEyePhoto] = useState(null)
-  const [dermoscopePhoto, setDermoscopePhoto] = useState(null)
+  const [dermoscopePhotos, setDermoscopePhotos] = useState([]) // array for multiple images
   const [nakedEyePreview, setNakedEyePreview] = useState(null)
-  const [dermoscopePreview, setDermoscopePreview] = useState(null)
+  const [dermoscopePreviews, setDermoscopePreviews] = useState([]) // array for multiple previews
 
   // For Step 3
+  const [siteOfInfection, setSiteOfInfection] = useState('')
 
-  const [siteOfInfection, setSiteOfInfection] = useState('');
-
-  // For step 4
-
-  const [patientId, setPatientId] = useState(null);
-  const [doctorId, setDoctorId] = useState(null);
-
+  // For Step 4
+  const [patientId, setPatientId] = useState(null)
+  const [doctorId, setDoctorId] = useState(null)
 
   return (
     <AppContext.Provider value={{
@@ -50,14 +47,14 @@ export function ContextProvider({ children }) {
       // Step 2 - images
       nakedEyePhoto,
       setNakedEyePhoto,
-      dermoscopePhoto,
-      setDermoscopePhoto,
+      dermoscopePhotos,
+      setDermoscopePhotos,
       nakedEyePreview,
       setNakedEyePreview,
-      dermoscopePreview,
-      setDermoscopePreview,
+      dermoscopePreviews,
+      setDermoscopePreviews,
 
-      //Step 3
+      // Step 3
       siteOfInfection,
       setSiteOfInfection,
     }}>

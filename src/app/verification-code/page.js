@@ -2,19 +2,17 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
+import Spinner from '@/components/Spinner';
 
 export default function VerificationCode() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // State for OTP digits
   const [otp, setOtp] = useState(['', '', '', '']);
-
-  // Store all signup form data here (read from URL)
   const [signupData, setSignupData] = useState({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Read all signup data from URL params
     const data = {};
     for (const key of searchParams.keys()) {
       data[key] = searchParams.get(key);
@@ -31,14 +29,12 @@ export default function VerificationCode() {
 
   const handleChange = (e, index) => {
     const value = e.target.value;
-
     if (!/^[0-9]?$/.test(value)) return;
 
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Auto-focus next input if available
     if (value && index < 3) {
       const nextInput = document.getElementById(`otp-${index + 1}`);
       if (nextInput) nextInput.focus();
@@ -55,61 +51,76 @@ export default function VerificationCode() {
     }
 
     try {
-      // Send OTP + signup data together
+      setLoading(true);
       const payload = {
         ...signupData,
         otp: fullOtp,
       };
 
-      const res = await axios.post('http://localhost:5000/api/auth/verify-otp', payload);
+      await axios.post('https://dermatology-backend-8xqf.onrender.com/api/auth/verify-otp', payload);
 
-      alert('OTP verified successfully! Your account is created.');
-
-      // After success, redirect user to login or dashboard
+      //alert('OTP verified successfully! Your account is created.');
       router.push('/login');
     } catch (err) {
       alert(err.response?.data?.error || 'OTP verification failed.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="bg-white w-full min-h-screen flex flex-col justify-center items-center py-16">
-      <span className="text-center sm:text-5xl text-3xl font-semibold text-black my-8">
-        Verification Code
-      </span>
+    <div className="relative">
+      <div className={`bg-white w-full min-h-screen flex flex-col justify-center items-center py-16 ${loading ? 'blur-sm' : ''}`}>
+        <span className="text-center sm:text-5xl text-3xl font-semibold text-black my-8">
+          Verification Code
+        </span>
 
-      <span className="font-normal text-center text-lg text-black">
-        We have sent a verification code to your email: <strong>{signupData.email}</strong>
-      </span>
+        <span className="font-normal text-center text-lg text-black">
+          We have sent a verification code to your email: <strong>{signupData.email}</strong>
+        </span>
 
-      <form
-        onSubmit={handleVerify}
-        className="flex flex-col justify-center items-center w-96 mt-6 text-black p-4"
-      >
-        <div className="flex flex-row space-x-12">
-          {otp.map((digit, index) => (
-            <input
-              key={index}
-              id={`otp-${index}`}
-              type="text"
-              maxLength="1"
-              value={digit}
-              onChange={(e) => handleChange(e, index)}
-              className="w-14 h-14 text-center text-2xl font-bold border-2 border-gray-400 rounded-xl focus:outline-none focus:border-green-800 font-poppins"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              autoComplete="one-time-code"
-            />
-          ))}
-        </div>
-
-        <button
-          type="submit"
-          className="bg-[#5F8D4E] w-60 text-[#ffffff] font-bold text-center text-base mt-8 rounded-xl py-2 hover:scale-105 hover:shadow-xl transition-transform duration-200 ease-in-out"
+        <form
+          onSubmit={handleVerify}
+          className="flex flex-col justify-center items-center w-96 mt-6 text-black p-4"
         >
-          Verify OTP
-        </button>
-      </form>
+          <div className="flex flex-row space-x-12">
+            {otp.map((digit, index) => (
+              <input
+                key={index}
+                id={`otp-${index}`}
+                type="text"
+                maxLength="1"
+                value={digit}
+                onChange={(e) => handleChange(e, index)}
+                className="w-14 h-14 text-center text-2xl font-bold border-2 border-gray-400 rounded-xl focus:outline-none focus:border-green-800 font-poppins"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoComplete="one-time-code"
+              />
+            ))}
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full sm:w-auto font-bold text-base sm:text-lg md:text-xl h-[45px] sm:h-[49px] rounded-[7px] px-4 sm:px-6 py-2.5 font-poppins transform transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-300/50 min-w-[120px] bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] hover:from-[#4a7a3a] hover:to-[#3d6330] relative overflow-hidden group mt-6 text-[#ffffff] ${
+              loading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            <span className="relative z-10">
+              {loading ? <Spinner /> : 'Verify OTP'}
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-600/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+          </button>
+        </form>
+      </div>
+
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-50">
+          <Spinner />
+        </div>
+      )}
     </div>
   );
 }
