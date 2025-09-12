@@ -376,7 +376,7 @@ export default function AdminGenerate() {
 
             {/* Progress Indicator */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-sm mb-2">Progress:</h4>
+              <h4 className="font-semibold text-sm mb-2 text-black">Progress:</h4>
               <div className="space-y-1 text-sm">
                 <div className={`flex items-center ${nakedEyeSaved ? 'text-green-600' : 'text-gray-500'}`}>
                   {nakedEyeSaved ? '✓' : '○'} Macroscopic image edited and saved
