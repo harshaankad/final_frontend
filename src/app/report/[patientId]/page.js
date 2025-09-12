@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import Example from '@/components/navbar';
-import Spinner from '@/components/spinner';
+import Spinner from '@/components/Spinner';
 
 export default function Report() {
   const { patientId } = useParams();
