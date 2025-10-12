@@ -11,10 +11,6 @@ export default function Step2() {
   const [loading, setLoading] = useState(false);
   const [processingMessage, setProcessingMessage] = useState("");
 
-  // Maximum allowed dimensions for MacBook Air screen compatibility
-  const MAX_WIDTH = 1200;
-  const MAX_HEIGHT = 400;
-
   const {
     firstName,
     nakedEyePhoto, setNakedEyePhoto,
@@ -27,61 +23,6 @@ export default function Step2() {
     console.log("The firstname is", firstName);
   }, [firstName]);
 
-  // Function to resize image while maintaining aspect ratio
-  const resizeImage = (file, maxWidth, maxHeight) => {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = document.createElement('img');
-
-      img.onload = () => {
-        const { naturalWidth, naturalHeight } = img;
-        
-        // Calculate the scaling factor to maintain aspect ratio
-        const scaleX = maxWidth / naturalWidth;
-        const scaleY = maxHeight / naturalHeight;
-        const scale = Math.min(scaleX, scaleY, 1); // Don't upscale, only downscale
-        
-        // Calculate new dimensions
-        const newWidth = Math.floor(naturalWidth * scale);
-        const newHeight = Math.floor(naturalHeight * scale);
-        
-        // Set canvas dimensions
-        canvas.width = newWidth;
-        canvas.height = newHeight;
-        
-        // Draw the resized image
-        ctx.drawImage(img, 0, 0, newWidth, newHeight);
-        
-        // Convert canvas to blob
-        canvas.toBlob((blob) => {
-          if (blob) {
-            // Create a new file with the same name and type as original
-            const resizedFile = new File([blob], file.name, {
-              type: file.type,
-              lastModified: Date.now(),
-            });
-            
-            resolve({
-              file: resizedFile,
-              wasResized: scale < 1,
-              originalDimensions: { width: naturalWidth, height: naturalHeight },
-              newDimensions: { width: newWidth, height: newHeight }
-            });
-          }
-        }, file.type, 0.9); // High quality compression
-        
-        URL.revokeObjectURL(img.src);
-      };
-
-      img.onerror = () => {
-        resolve({ file: file, wasResized: false, error: "Unable to process image" });
-      };
-
-      img.src = URL.createObjectURL(file);
-    });
-  };
-
   const handleFileChange = async (e, type) => {
     setProcessingMessage(""); // Clear any previous processing messages
     
@@ -91,24 +32,9 @@ export default function Step2() {
         setProcessingMessage("Processing image...");
         
         try {
-          const result = await resizeImage(file, MAX_WIDTH, MAX_HEIGHT);
-          
-          if (result.error) {
-            setProcessingMessage(`Error: ${result.error}`);
-            e.target.value = '';
-            return;
-          }
-          
-          setNakedEyePhoto(result.file);
-          setNakedEyePreview(URL.createObjectURL(result.file));
-          
-          if (result.wasResized) {
-            setProcessingMessage(`Image automatically resized from ${result.originalDimensions.width}×${result.originalDimensions.height} to ${result.newDimensions.width}×${result.newDimensions.height} to fit screen requirements.`);
-            // Clear message after 5 seconds
-            setTimeout(() => setProcessingMessage(""), 5000);
-          } else {
-            setProcessingMessage("");
-          }
+          setNakedEyePhoto(file);
+          setNakedEyePreview(URL.createObjectURL(file));
+          setProcessingMessage("");
         } catch (error) {
           setProcessingMessage(`Error processing image: ${error.message || 'Unknown error'}`);
           e.target.value = '';
@@ -120,34 +46,14 @@ export default function Step2() {
         setProcessingMessage(`Processing ${files.length} image(s)...`);
         
         try {
-          const results = await Promise.all(
-            files.map(file => resizeImage(file, MAX_WIDTH, MAX_HEIGHT))
-          );
+          // Add files to existing ones
+          setDermoscopePhotos(prevPhotos => [...prevPhotos, ...files]);
           
-          const hasErrors = results.some(result => result.error);
-          if (hasErrors) {
-            setProcessingMessage("Error processing some images. Please try again.");
-            e.target.value = '';
-            return;
-          }
-          
-          const processedFiles = results.map(result => result.file);
-          const resizedCount = results.filter(result => result.wasResized).length;
-          
-          // Add processed files to existing ones
-          setDermoscopePhotos(prevPhotos => [...prevPhotos, ...processedFiles]);
-          
-          // Create previews for processed files and add to existing previews
-          const newPreviews = processedFiles.map(file => URL.createObjectURL(file));
+          // Create previews for files and add to existing previews
+          const newPreviews = files.map(file => URL.createObjectURL(file));
           setDermoscopePreviews(prevPreviews => [...prevPreviews, ...newPreviews]);
           
-          if (resizedCount > 0) {
-            setProcessingMessage(`${resizedCount} of ${files.length} image(s) were automatically resized to fit screen requirements.`);
-            // Clear message after 5 seconds
-            setTimeout(() => setProcessingMessage(""), 5000);
-          } else {
-            setProcessingMessage("");
-          }
+          setProcessingMessage("");
         } catch (error) {
           setProcessingMessage(`Error processing images: ${error.message || 'Unknown error'}`);
           e.target.value = '';
@@ -284,7 +190,7 @@ export default function Step2() {
                 Please upload a clear Clinical eye photo of the affected area
               </span>
               <span className="text-gray-500 text-xs sm:text-sm font-normal mb-3">
-                Images larger than {MAX_WIDTH} × {MAX_HEIGHT} pixels will be automatically resized while maintaining quality and aspect ratio
+                Images will be uploaded at their original size and quality
               </span>
               <input
                 type="file"
@@ -325,7 +231,7 @@ export default function Step2() {
                 Please upload one or more dermoscope photos of the affected area. You can select multiple files at once or add them one by one.
               </span>
               <span className="text-gray-500 text-xs sm:text-sm font-normal mb-3">
-                Images larger than {MAX_WIDTH} × {MAX_HEIGHT} pixels will be automatically resized while maintaining quality and aspect ratio
+                Images will be uploaded at their original size and quality
               </span>
               <input
                 type="file"

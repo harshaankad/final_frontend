@@ -77,7 +77,7 @@ export default function HeaderSection() {
 
 
   <p className={`text-gray-700 font-paragraph text-base sm:text-lg md:text-xl lg:text-[length:var(--paragraph-font-size)] tracking-[var(--paragraph-letter-spacing)] leading-relaxed sm:leading-[1.6] md:leading-[1.7] lg:leading-[var(--paragraph-line-height)] [font-style:var(--paragraph-font-style)] mt-4 sm:mt-5 md:mt-6 lg:mt-[19px] max-w-full lg:max-w-[471px] text-center lg:text-left transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} [transition-delay:300ms]`}>
-    Trusted dermatology reports and care, led by <strong className="text-green-700">Dr. B. S. Ankad</strong> with 20+ years of expertise.
+    Trusted Dermoscopy reports and care, led by <strong className="text-green-700">Dr. B. S. Ankad</strong> with 20+ years of expertise.
   </p>
 </div>
 

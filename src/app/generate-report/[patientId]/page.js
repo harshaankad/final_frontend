@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import Example from '@/components/navbar';
 import ImageEditor from '@/components/ImageEditor';
 import Spinner from '@/components/Spinner';
+import { Download } from 'lucide-react';
 
 export default function AdminGenerate() {
   const { patientId } = useParams();
@@ -19,9 +20,9 @@ export default function AdminGenerate() {
   const [dermoscopeFindings, setDermoscopeFindings] = useState('');
   const [clinicalImpression, setClinicalImpression] = useState('');
   const [editedNakedEyeFile, setEditedNakedEyeFile] = useState(null);
-  const [editedDermoscopeFiles, setEditedDermoscopeFiles] = useState([]); // Changed to array
+  const [editedDermoscopeFiles, setEditedDermoscopeFiles] = useState([]);
   const [nakedEyeSaved, setNakedEyeSaved] = useState(false);
-  const [dermoscopeSavedStates, setDermoscopeSavedStates] = useState([]); // Array of saved states
+  const [dermoscopeSavedStates, setDermoscopeSavedStates] = useState([]);
 
   const BASE_URL = 'https://dermatology-backend-8xqf.onrender.com/api';
 
@@ -55,7 +56,6 @@ export default function AdminGenerate() {
 
         setPatient(data.data.patient);
         
-        // Initialize dermoscope files and saved states arrays based on number of photos
         if (data.data.patient.dermoscopePhotos) {
           const photosCount = data.data.patient.dermoscopePhotos.length;
           setEditedDermoscopeFiles(new Array(photosCount).fill(null));
@@ -80,14 +80,12 @@ export default function AdminGenerate() {
   const handleDermoscopeEditComplete = (file, index) => {
     console.log(`Dermoscope ${index} edit complete:`, file);
     
-    // Update the specific file at the given index
     setEditedDermoscopeFiles(prev => {
       const newFiles = [...prev];
       newFiles[index] = file;
       return newFiles;
     });
 
-    // Update the saved state for this specific dermoscope
     setDermoscopeSavedStates(prev => {
       const newStates = [...prev];
       newStates[index] = true;
@@ -95,12 +93,36 @@ export default function AdminGenerate() {
     });
   };
 
-  // Check if all dermoscope photos are saved
+  const downloadImage = (file, fileName) => {
+    if (!file) {
+      alert('No image to download. Please edit and save the image first.');
+      return;
+    }
+
+    const url = URL.createObjectURL(file);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadNakedEye = () => {
+    const fileName = `${patient.firstname}_${patient.lastname}_macroscopic_edited.jpg`;
+    downloadImage(editedNakedEyeFile, fileName);
+  };
+
+  const handleDownloadDermoscope = (index) => {
+    const fileName = `${patient.firstname}_${patient.lastname}_dermoscopic_${index + 1}_edited.jpg`;
+    downloadImage(editedDermoscopeFiles[index], fileName);
+  };
+
   const areAllDermoscopesSaved = () => {
     return dermoscopeSavedStates.length > 0 && dermoscopeSavedStates.every(saved => saved);
   };
 
-  // Check if all dermoscope files exist
   const areAllDermoscopeFilesReady = () => {
     return editedDermoscopeFiles.length > 0 && editedDermoscopeFiles.every(file => file !== null);
   };
@@ -112,7 +134,6 @@ export default function AdminGenerate() {
       return;
     }
 
-    // Debug logging
     console.log('=== FRONTEND DEBUG ===');
     console.log('dermoscopeFindings:', dermoscopeFindings);
     console.log('clinicalImpression:', clinicalImpression);
@@ -120,7 +141,6 @@ export default function AdminGenerate() {
     console.log('editedDermoscopeFiles:', editedDermoscopeFiles);
     console.log('dermoscopeSavedStates:', dermoscopeSavedStates);
 
-    // Validation before sending
     if (!dermoscopeFindings.trim() || !clinicalImpression.trim()) {
       alert('Please fill in all required fields');
       return;
@@ -149,12 +169,10 @@ export default function AdminGenerate() {
     formData.append('digitalSignature', 'SignedByAdmin'); 
     formData.append('editedNakedEyePhoto', editedNakedEyeFile);
     
-    // Append all edited dermoscope files
     editedDermoscopeFiles.forEach((file, index) => {
       formData.append('editedDermoscopePhotos', file);
     });
 
-    // Debug FormData contents
     console.log('=== FORMDATA CONTENTS ===');
     for (let [key, value] of formData.entries()) {
       console.log(key, value);
@@ -190,7 +208,6 @@ export default function AdminGenerate() {
     }
   };
 
-  // Skeleton loader components
   const ImageSkeleton = () => (
     <div className="w-full h-64 sm:h-80 md:h-96 bg-gray-200 animate-pulse rounded-lg"></div>
   );
@@ -203,7 +220,6 @@ export default function AdminGenerate() {
     </div>
   );
 
-  // Loading Overlay Component
   const LoadingOverlay = () => (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center">
       <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center space-y-4 max-w-sm mx-4">
@@ -225,7 +241,6 @@ export default function AdminGenerate() {
 
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-10">
-            {/* Image Editor Skeletons */}
             <div>
               <div className="h-6 sm:h-7 bg-gray-200 animate-pulse rounded mb-4 w-48"></div>
               <ImageSkeleton />
@@ -236,12 +251,10 @@ export default function AdminGenerate() {
             </div>
           </div>
 
-          {/* Patient Info Skeleton */}
           <div className="mt-8 sm:mt-10 max-w-2xl mx-auto space-y-4 border-2 p-4 sm:p-6 rounded">
             <TextSkeleton lines={5} height="h-5" />
           </div>
 
-          {/* Form Section Skeleton */}
           <div className="mt-8 sm:mt-10 max-w-2xl mx-auto space-y-6">
             <div>
               <TextSkeleton height="h-5" />
@@ -279,7 +292,6 @@ export default function AdminGenerate() {
 
   return (
     <div className="bg-white flex flex-col min-h-screen relative">
-      {/* Loading Overlay */}
       {generating && <LoadingOverlay />}
       
       <header className="w-full">
@@ -287,7 +299,6 @@ export default function AdminGenerate() {
       </header>
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
-        {/* Vertical Layout - Images stacked one below another */}
         <div className="flex flex-col space-y-8">
           {/* Naked Eye Image Editor */}
           <div className="space-y-4">
@@ -301,6 +312,16 @@ export default function AdminGenerate() {
                   imageUrl={patient.nakedEyePhoto}
                   onEditComplete={handleNakedEyeEditComplete}
                   preserveOriginalSize={true}
+                  downloadButton={
+                    <Button
+                      onClick={handleDownloadNakedEye}
+                      disabled={!nakedEyeSaved || !editedNakedEyeFile}
+                      className="flex items-center gap-2 bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] hover:from-[#4a7a3a] hover:to-[#3d6330] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md transition-all"
+                    >
+                      <Download size={18} />
+                      Download Image
+                    </Button>
+                  }
                 />
               </div>
             </div>
@@ -319,6 +340,16 @@ export default function AdminGenerate() {
                     imageUrl={dermoscopeUrl}
                     onEditComplete={(file) => handleDermoscopeEditComplete(file, index)}
                     preserveOriginalSize={true}
+                    downloadButton={
+                      <Button
+                        onClick={() => handleDownloadDermoscope(index)}
+                        disabled={!dermoscopeSavedStates[index] || !editedDermoscopeFiles[index]}
+                        className="flex items-center gap-2 bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] hover:from-[#4a7a3a] hover:to-[#3d6330] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md transition-all"
+                      >
+                        <Download size={18} />
+                        Download Image
+                      </Button>
+                    }
                   />
                 </div>
               </div>

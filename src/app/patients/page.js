@@ -2,17 +2,16 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { User } from "lucide-react";
+import { User, Stethoscope } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Example from "@/components/navbar";
 
 // Skeleton Loading Component
-const PatientSkeleton = () => (
+const PatientSkeleton = ({ isAdmin }) => (
   <div className="bg-white rounded-md p-4 border border-gray-100 animate-pulse">
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 items-center">
-      {/* Name Column */}
+    <div className={`grid ${isAdmin ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-7' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6'} gap-4 items-center`}>
       <div className="flex items-center gap-3 col-span-2 sm:col-span-1">
         <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 rounded-md flex-shrink-0"></div>
         <div className="flex flex-col gap-2 min-w-0 flex-1">
@@ -20,28 +19,23 @@ const PatientSkeleton = () => (
           <div className="h-3 bg-gray-200 rounded w-12 sm:w-16 sm:hidden"></div>
         </div>
       </div>
-
-      {/* Age Column - Hidden on mobile */}
       <div className="hidden sm:block">
         <div className="h-4 bg-gray-200 rounded w-8"></div>
       </div>
-
-      {/* Gender Column - Hidden on mobile and tablet */}
+      {isAdmin && (
+        <div className="hidden lg:block">
+          <div className="h-4 bg-gray-200 rounded w-24"></div>
+        </div>
+      )}
       <div className="hidden lg:block">
         <div className="h-4 bg-gray-200 rounded w-12"></div>
       </div>
-
-      {/* Duration Column - Hidden on mobile and tablet */}
       <div className="hidden lg:block">
         <div className="h-4 bg-gray-200 rounded w-16"></div>
       </div>
-
-      {/* Date Column - Hidden on mobile and tablet */}
       <div className="hidden lg:block">
         <div className="h-4 bg-gray-200 rounded w-20"></div>
       </div>
-
-      {/* Status Column */}
       <div className="flex justify-end sm:justify-start">
         <div className="h-6 bg-gray-200 rounded-full w-20"></div>
       </div>
@@ -49,11 +43,10 @@ const PatientSkeleton = () => (
   </div>
 );
 
-// Multiple skeleton rows
-const SkeletonLoader = () => (
+const SkeletonLoader = ({ isAdmin }) => (
   <div className="space-y-3">
     {Array.from({ length: 8 }).map((_, index) => (
-      <PatientSkeleton key={index} />
+      <PatientSkeleton key={index} isAdmin={isAdmin} />
     ))}
   </div>
 );
@@ -155,6 +148,9 @@ export default function PatientsPage() {
         ? adminEndpoints[activeTab]
         : regularEndpoints[activeTab];
 
+      console.log("Fetching from endpoint:", BASE_URL + endpoint);
+      console.log("Is Admin:", isAdmin);
+
       const res = await fetch(BASE_URL + endpoint, {
         headers: {
           "Content-Type": "application/json",
@@ -171,21 +167,33 @@ export default function PatientsPage() {
       }
 
       const data = await res.json();
-      if (data.success) {
-        const normalizedPatients = data.data.map((p) => ({
-          ...p,
-          status:
-            p.status.toLowerCase() === "done"
-              ? "Completed"
-              : p.status.charAt(0).toUpperCase() + p.status.slice(1),
-        }));
+      console.log("API Response:", data);
 
+      if (data.success) {
+        const normalizedPatients = data.data.map((p) => {
+          console.log("Processing patient:", p.firstname, "Doctor object:", p.doctor);
+          
+          return {
+            ...p,
+            status:
+              p.status.toLowerCase() === "done"
+                ? "Completed"
+                : p.status.charAt(0).toUpperCase() + p.status.slice(1),
+            // ✅ Extract doctor name from populated data (first name only)
+            doctorName: p.doctor && p.doctor.firstname 
+              ? `Dr. ${p.doctor.firstname.trim()}`
+              : "N/A",
+          };
+        });
+
+        console.log("Normalized patients:", normalizedPatients);
         setPatients(normalizedPatients);
-        setVisibleCount(10); // Reset visible count when new data loads
+        setVisibleCount(10);
       } else {
         setPatients([]);
       }
     } catch (err) {
+      console.error("Fetch error:", err);
       setError(err.message);
       setPatients([]);
     } finally {
@@ -193,12 +201,10 @@ export default function PatientsPage() {
     }
   };
 
-  // Update displayed patients when patients or visibleCount changes
   useEffect(() => {
     setDisplayedPatients(patients.slice(0, visibleCount));
   }, [patients, visibleCount]);
 
-  // Intersection Observer for infinite scroll
   const lastPatientElementRef = useCallback(
     (node) => {
       if (loading) return;
@@ -241,7 +247,7 @@ export default function PatientsPage() {
 
   const handleRowClick = (patient) => {
     let targetUrl = isAdmin
-      ? patient.status.toLowerCase() === "pending"
+      ? patient.status.toLowerCase() === "pending" || patient.status === "Pending"
         ? `/generate-report/${patient._id}`
         : `/report/${patient._id}`
       : `/report/${patient._id}`;
@@ -279,12 +285,14 @@ export default function PatientsPage() {
     );
   };
 
-  // Header for desktop view
   const DesktopHeader = () => (
     <div className="hidden lg:block bg-gray-50 rounded-md border-b border-gray-300 p-4 mb-4">
-      <div className="grid grid-cols-6 gap-4">
+      <div className={`grid ${isAdmin ? 'grid-cols-7' : 'grid-cols-6'} gap-4`}>
         <div className="font-semibold text-xs text-[#b5b5c3] pl-16">Name</div>
         <div className="font-semibold text-xs text-[#b5b5c3]">Age</div>
+        {isAdmin && (
+          <div className="font-semibold text-xs text-[#b5b5c3] ml-6">Posted By</div>
+        )}
         <div className="font-semibold text-xs text-[#b5b5c3]">Gender</div>
         <div className="font-semibold text-xs text-[#b5b5c3]">Duration</div>
         <div className="font-semibold text-xs text-[#b5b5c3]">Date added</div>
@@ -293,7 +301,6 @@ export default function PatientsPage() {
     </div>
   );
 
-  // Header for tablet view
   const TabletHeader = () => (
     <div className="hidden sm:block lg:hidden bg-gray-50 rounded-md border-b border-gray-300 p-4 mb-4">
       <div className="grid grid-cols-3 gap-4">
@@ -304,7 +311,6 @@ export default function PatientsPage() {
     </div>
   );
 
-  // Header for mobile view
   const MobileHeader = () => (
     <div className="block sm:hidden bg-gray-50 rounded-md border-b border-gray-300 p-4 mb-4">
       <div className="grid grid-cols-2 gap-4">
@@ -370,7 +376,7 @@ export default function PatientsPage() {
           <MobileHeader />
 
           {loading ? (
-            <SkeletonLoader />
+            <SkeletonLoader isAdmin={isAdmin} />
           ) : (
             <div className="space-y-2 sm:space-y-3">
               {displayedPatients.length === 0 ? (
@@ -379,6 +385,8 @@ export default function PatientsPage() {
                 </div>
               ) : (
                 displayedPatients.map((patient, index) => (
+                  console.log("Patient object:", patient),
+
                   <div
                     key={patient._id}
                     ref={
@@ -412,6 +420,14 @@ export default function PatientsPage() {
                             <div className="font-medium text-xs text-[#b5b5c3]">
                               {patient.age} • {patient.gender}
                             </div>
+                            {isAdmin && (
+                              <div className="flex items-center gap-1 mt-1">
+                                <Stethoscope className="w-3 h-3 text-[#5F8D4E]" />
+                                <span className="font-medium text-[10px] text-[#5F8D4E] truncate">
+                                  {patient.doctorName}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="flex justify-end">
@@ -447,6 +463,14 @@ export default function PatientsPage() {
                             <div className="font-medium text-xs text-[#b5b5c3]">
                               {patient.gender}
                             </div>
+                            {isAdmin && (
+                              <div className="flex items-center gap-1 mt-1">
+                                <Stethoscope className="w-3 h-3 text-[#5F8D4E]" />
+                                <span className="font-medium text-[10px] text-[#5F8D4E] truncate">
+                                  {patient.doctorName}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="font-semibold text-sm text-[#464e5f]">
@@ -466,9 +490,9 @@ export default function PatientsPage() {
                       </div>
                     </div>
 
-                    {/* Desktop Layout (6 columns) */}
+                    {/* Desktop Layout (6 or 7 columns based on admin) */}
                     <div className="hidden lg:block">
-                      <div className="grid grid-cols-6 gap-4 items-center">
+                      <div className={`grid ${isAdmin ? 'grid-cols-7' : 'grid-cols-6'} gap-4 items-center`}>
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 bg-[#f3f6f9] rounded-md flex items-center justify-center">
                             <Avatar className="w-10 h-10">
@@ -491,6 +515,19 @@ export default function PatientsPage() {
                         <div className="font-semibold text-sm text-[#464e5f]">
                           {patient.age}
                         </div>
+
+                        {isAdmin && (
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 bg-[#F4FFF3] rounded-full flex items-center justify-center flex-shrink-0">
+                              <Stethoscope className="w-3.5 h-3.5 text-[#5F8D4E]" />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <div className="font-medium text-xs text-[#5F8D4E] truncate">
+                                {patient.doctorName}
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
                         <div className="font-semibold text-sm text-[#464e5f]">
                           {patient.gender}
@@ -533,7 +570,6 @@ export default function PatientsPage() {
                 ))
               )}
               
-              {/* Loading more indicator */}
               {visibleCount < patients.length && (
                 <div className="text-center py-4">
                   <div className="inline-flex items-center gap-2 text-sm text-gray-500">

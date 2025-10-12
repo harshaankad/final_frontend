@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -17,6 +17,8 @@ export default function Report() {
   const [imageErrors, setImageErrors] = useState({});
   const [imageLoading, setImageLoading] = useState({});
   const [imagesInitialized, setImagesInitialized] = useState(false);
+  const [downloadingPDF, setDownloadingPDF] = useState(false);
+  const reportRef = useRef(null);
 
   const BASE_URL = 'https://dermatology-backend-8xqf.onrender.com/api';
 
@@ -31,13 +33,11 @@ export default function Report() {
   const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
     
-    // If it's already a full URL, return as is
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
     
-    // If it's a relative path, construct the full URL
-    const baseImageUrl = 'https://dermatology-backend-8xqf.onrender.com'; // Adjust this to match your backend
+    const baseImageUrl = 'https://dermatology-backend-8xqf.onrender.com';
     return `${baseImageUrl}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
   };
 
@@ -60,20 +60,17 @@ export default function Report() {
     }));
   };
 
-  // Initialize image loading states when images are about to be rendered
   const initializeImageStates = (reportData) => {
     if (!reportData || imagesInitialized) return;
 
     const initialImageLoading = {};
     const initialImageErrors = {};
     
-    // Handle naked eye photo (single photo)
     if (reportData.editedNakedEyePhoto) {
       initialImageLoading['nakedEye_0'] = true;
       initialImageErrors['nakedEye_0'] = false;
     }
     
-    // Handle dermoscope photos (array of photos)
     if (reportData.editedDermoscopePhotos && Array.isArray(reportData.editedDermoscopePhotos)) {
       reportData.editedDermoscopePhotos.forEach((_, index) => {
         initialImageLoading[`dermoscope_${index}`] = true;
@@ -84,6 +81,433 @@ export default function Report() {
     setImageLoading(initialImageLoading);
     setImageErrors(initialImageErrors);
     setImagesInitialized(true);
+  };
+
+  // Function to convert image URL to base64 and get dimensions
+  const getBase64Image = async (url) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        const img = new window.Image();
+        
+        reader.onloadend = () => {
+          const base64 = reader.result;
+          
+          // Create image to get natural dimensions
+          img.onload = () => {
+            resolve({
+              data: base64,
+              width: img.naturalWidth,
+              height: img.naturalHeight
+            });
+          };
+          
+          img.onerror = () => {
+            reject(new Error('Failed to load image'));
+          };
+          
+          img.src = base64;
+        };
+        
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('Error converting image to base64:', error);
+      return null;
+    }
+  };
+
+  // Function to calculate scaled dimensions maintaining aspect ratio
+  const getScaledDimensions = (originalWidth, originalHeight, maxWidth = 550) => {
+    // If image is smaller than max width, use original size
+    if (originalWidth <= maxWidth) {
+      return { width: originalWidth, height: originalHeight };
+    }
+    
+    // Calculate scale ratio
+    const ratio = maxWidth / originalWidth;
+    
+    return {
+      width: Math.round(maxWidth),
+      height: Math.round(originalHeight * ratio)
+    };
+  };
+
+  // Function to download as Word document
+  const downloadWord = async () => {
+    setDownloadingPDF(true);
+    
+    try {
+      // Dynamically import libraries
+      const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, ImageRun, convertInchesToTwip } = await import('docx');
+
+      const children = [];
+
+      // Header with better styling
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: 'Dermoscopy Report',
+              bold: true,
+              size: 32,
+              color: "000000"
+            })
+          ],
+          heading: HeadingLevel.HEADING_1,
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 300, before: 200 },
+          border: {
+            bottom: {
+              color: "000000",
+              space: 1,
+              style: BorderStyle.SINGLE,
+              size: 24
+            }
+          }
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: "Dr ANKAD'S EAGLES EYE Dermoscopy Services" ,
+              bold: true,
+              size: 24,
+              color: "000000"
+            })
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 150 }
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: 'Bagalkot',
+              size: 22,
+              color: "000000"
+            })
+          ],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 500 }
+        })
+      );
+
+      // Patient Info Table with darker borders and better styling
+      const patientInfoTable = new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        borders: {
+          top: { style: BorderStyle.SINGLE, size: 30, color: "000000" },
+          bottom: { style: BorderStyle.SINGLE, size: 30, color: "000000" },
+          left: { style: BorderStyle.SINGLE, size: 30, color: "000000" },
+          right: { style: BorderStyle.SINGLE, size: 30, color: "000000" },
+          insideHorizontal: { style: BorderStyle.SINGLE, size: 20, color: "000000" },
+          insideVertical: { style: BorderStyle.SINGLE, size: 20, color: "000000" }
+        },
+        rows: [
+          new TableRow({
+            children: [
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: 'Name: ', bold: true, size: 22, color: "000000" }),
+                      new TextRun({ text: `${patient.firstname} ${patient.lastname}`, size: 22, color: "000000" })
+                    ],
+                    spacing: { before: 100, after: 100 }
+                  })
+                ],
+                width: { size: 33, type: WidthType.PERCENTAGE },
+                margins: {
+                  top: convertInchesToTwip(0.1),
+                  bottom: convertInchesToTwip(0.1),
+                  left: convertInchesToTwip(0.15),
+                  right: convertInchesToTwip(0.15)
+                }
+              }),
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: 'Age / Sex: ', bold: true, size: 22, color: "000000" }),
+                      new TextRun({ text: `${patient.age} / ${patient.gender}`, size: 22, color: "000000" })
+                    ],
+                    spacing: { before: 100, after: 100 }
+                  })
+                ],
+                width: { size: 33, type: WidthType.PERCENTAGE },
+                margins: {
+                  top: convertInchesToTwip(0.1),
+                  bottom: convertInchesToTwip(0.1),
+                  left: convertInchesToTwip(0.15),
+                  right: convertInchesToTwip(0.15)
+                }
+              }),
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: 'Date: ', bold: true, size: 22, color: "000000" }),
+                      new TextRun({ text: `${new Date(patient.createdAt).toLocaleDateString()}`, size: 22, color: "000000" })
+                    ],
+                    spacing: { before: 100, after: 100 }
+                  })
+                ],
+                width: { size: 34, type: WidthType.PERCENTAGE },
+                margins: {
+                  top: convertInchesToTwip(0.1),
+                  bottom: convertInchesToTwip(0.1),
+                  left: convertInchesToTwip(0.15),
+                  right: convertInchesToTwip(0.15)
+                }
+              })
+            ]
+          })
+        ]
+      });
+
+      children.push(patientInfoTable);
+      children.push(new Paragraph({ text: '', spacing: { after: 400 } }));
+
+      // Clinical Details with better formatting
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: 'Site of lesion: ', bold: true, size: 24, color: "000000" }),
+            new TextRun({ text: patient.siteOfInfection, size: 24, color: "000000" })
+          ],
+          spacing: { after: 250 }
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({ text: 'Duration of Symptoms: ', bold: true, size: 24, color: "000000" }),
+            new TextRun({ text: patient.duration, size: 24, color: "000000" })
+          ],
+          spacing: { after: 250 }
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({ text: 'Clinical Impression: ', bold: true, size: 24, color: "000000" }),
+            new TextRun({ text: report.clinicalImpression, size: 24, color: "000000" })
+          ],
+          spacing: { after: 500 }
+        })
+      );
+
+      // Dermoscopic Findings Box with darker borders
+      const dermoscopicTable = new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        borders: {
+          top: { style: BorderStyle.SINGLE, size: 30, color: "000000" },
+          bottom: { style: BorderStyle.SINGLE, size: 30, color: "000000" },
+          left: { style: BorderStyle.SINGLE, size: 30, color: "000000" },
+          right: { style: BorderStyle.SINGLE, size: 30, color: "000000" }
+        },
+        rows: [
+          new TableRow({
+            children: [
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [
+                      new TextRun({
+                        text: 'Dermoscopic findings:',
+                        bold: true,
+                        size: 26,
+                        color: "000000"
+                      })
+                    ],
+                    spacing: { after: 300 }
+                  }),
+                  new Paragraph({
+                    children: [
+                      new TextRun({
+                        text: report.dermoscopeFindings,
+                        size: 24,
+                        color: "000000"
+                      })
+                    ],
+                    spacing: { after: 300 },
+                    alignment: AlignmentType.JUSTIFIED
+                  }),
+                  new Paragraph({
+                    children: [
+                      new TextRun({ text: 'Impression: ', bold: true, size: 24, color: "000000" }),
+                      new TextRun({ text: report.clinicalImpression, size: 24, color: "000000" })
+                    ]
+                  })
+                ],
+                margins: {
+                  top: convertInchesToTwip(0.2),
+                  bottom: convertInchesToTwip(0.2),
+                  left: convertInchesToTwip(0.2),
+                  right: convertInchesToTwip(0.2)
+                }
+              })
+            ]
+          })
+        ]
+      });
+
+      children.push(dermoscopicTable);
+      children.push(new Paragraph({ text: '', spacing: { after: 500 } }));
+
+      // Medical Images Section with better styling
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: 'Medical Images',
+              bold: true,
+              size: 32,
+              color: "000000",
+              underline: {}
+            })
+          ],
+          heading: HeadingLevel.HEADING_1,
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 600, after: 400 },
+          border: {
+            top: {
+              color: "000000",
+              space: 1,
+              style: BorderStyle.SINGLE,
+              size: 24
+            }
+          }
+        })
+      );
+
+      // Add Naked Eye Photo
+      if (report.editedNakedEyePhoto) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: 'Clinical Eye Photograph',
+                bold: true,
+                size: 26,
+                color: "000000"
+              })
+            ],
+            heading: HeadingLevel.HEADING_2,
+            spacing: { after: 300 }
+          })
+        );
+
+        const nakedEyeUrl = getImageUrl(report.editedNakedEyePhoto);
+        const nakedEyeImageData = await getBase64Image(nakedEyeUrl);
+        
+        if (nakedEyeImageData) {
+          const dimensions = getScaledDimensions(nakedEyeImageData.width, nakedEyeImageData.height);
+          
+          children.push(
+            new Paragraph({
+              children: [
+                new ImageRun({
+                  data: nakedEyeImageData.data,
+                  transformation: { 
+                    width: dimensions.width, 
+                    height: dimensions.height 
+                  }
+                })
+              ],
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 500 }
+            })
+          );
+        }
+      }
+
+      // Add Dermoscope Photos
+      if (report.editedDermoscopePhotos && Array.isArray(report.editedDermoscopePhotos) && report.editedDermoscopePhotos.length > 0) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: 'Dermoscope Photographs',
+                bold: true,
+                size: 26,
+                color: "000000"
+              })
+            ],
+            heading: HeadingLevel.HEADING_2,
+            spacing: { after: 300 }
+          })
+        );
+
+        for (let i = 0; i < report.editedDermoscopePhotos.length; i++) {
+          const photo = report.editedDermoscopePhotos[i];
+          const photoUrl = getImageUrl(photo);
+          const photoImageData = await getBase64Image(photoUrl);
+          
+          if (photoImageData) {
+            const dimensions = getScaledDimensions(photoImageData.width, photoImageData.height);
+            
+            if (report.editedDermoscopePhotos.length > 1) {
+              children.push(
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `Dermoscope Photo ${i + 1}`,
+                      bold: true,
+                      size: 24,
+                      color: "000000"
+                    })
+                  ],
+                  spacing: { before: 300, after: 200 }
+                })
+              );
+            }
+            
+            children.push(
+              new Paragraph({
+                children: [
+                  new ImageRun({
+                    data: photoImageData.data,
+                    transformation: { 
+                      width: dimensions.width, 
+                      height: dimensions.height 
+                    }
+                  })
+                ],
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 500 }
+              })
+            );
+          }
+        }
+      }
+
+      // Create document
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: children
+        }]
+      });
+
+      // Generate and save
+      const blob = await Packer.toBlob(doc);
+      
+      // Create download link manually instead of using file-saver
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Dermoscopy_Report_${patient.firstname}_${patient.lastname}_${new Date().toLocaleDateString().replace(/\//g, '-')}.docx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error('Error generating Word document:', error);
+      alert('Failed to generate Word document. Please try again.');
+    } finally {
+      setDownloadingPDF(false);
+    }
   };
 
   useEffect(() => {
@@ -123,21 +547,18 @@ export default function Report() {
     }
   }, [patientId]);
 
-  // Initialize image states when report data is available
   useEffect(() => {
     if (report && !loading) {
       initializeImageStates(report);
     }
   }, [report, loading, imagesInitialized]);
 
-  // Skeleton component for images
   const ImageSkeleton = () => (
     <div className="w-full h-48 sm:h-56 md:h-64 lg:h-72 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded animate-pulse relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-50 animate-shimmer"></div>
     </div>
   );
 
-  // Text skeleton component
   const TextSkeleton = ({ className = "", lines = 1 }) => (
     <div className={`space-y-2 ${className}`}>
       {[...Array(lines)].map((_, i) => (
@@ -146,7 +567,6 @@ export default function Report() {
     </div>
   );
 
-  // Header skeleton
   const HeaderSkeleton = () => (
     <div className="text-center space-y-3">
       <div className="h-6 bg-gray-200 rounded animate-pulse mx-auto w-3/4"></div>
@@ -155,7 +575,6 @@ export default function Report() {
     </div>
   );
 
-  // Patient info skeleton
   const PatientInfoSkeleton = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 border border-gray-200 px-3 sm:px-4 py-3">
       <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
@@ -164,7 +583,6 @@ export default function Report() {
     </div>
   );
 
-  // Loading overlay component
   const LoadingOverlay = () => (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center">
       <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center space-y-4 max-w-sm mx-4">
@@ -177,7 +595,6 @@ export default function Report() {
     </div>
   );
 
-  // Render individual image with proper loading states
   const renderImage = (imagePath, imageKey, altText, title) => {
     const imageUrl = getImageUrl(imagePath);
     const isLoading = imageLoading[imageKey];
@@ -193,14 +610,12 @@ export default function Report() {
           </h5>
         )}
         
-        {/* Loading skeleton - only show if loading and no error */}
         {isLoading && !hasError && (
           <div className="w-full h-64 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded animate-pulse flex items-center justify-center">
             <div className="text-gray-500">Loading image...</div>
           </div>
         )}
 
-        {/* Error state */}
         {hasError && (
           <div className="w-full h-64 border-2 border-dashed border-gray-300 flex items-center justify-center">
             <div className="text-center text-gray-500 p-4">
@@ -212,7 +627,6 @@ export default function Report() {
           </div>
         )}
 
-        {/* Actual image - hide while loading or if error */}
         {!hasError && (
           <Image
             src={imageUrl}
@@ -227,21 +641,19 @@ export default function Report() {
             onError={() => handleImageError(imageKey)}
             onLoad={() => handleImageLoad(imageKey)}
             onLoadStart={() => {
-              // Ensure loading state is set when image starts loading
               setImageLoading(prev => ({
                 ...prev,
                 [imageKey]: true
               }));
             }}
             unoptimized={true}
-            priority={imageKey === 'nakedEye_0'} // Prioritize first image
+            priority={imageKey === 'nakedEye_0'}
           />
         )}
       </div>
     );
   };
 
-  // Render photo gallery section
   const renderPhotoGallery = () => {
     if (!report) return null;
 
@@ -259,7 +671,6 @@ export default function Report() {
             Medical Images
           </h3>
           
-          {/* Naked Eye Photo Section */}
           {hasNakedEyePhoto && (
             <div className="mb-8">
               <h4 className="text-lg font-semibold mb-4 font-poppins text-gray-800">
@@ -275,7 +686,6 @@ export default function Report() {
             </div>
           )}
 
-          {/* Dermoscope Photos Section */}
           {dermoscopePhotos.length > 0 && (
             <div className="mb-8">
               <h4 className="text-lg font-semibold mb-4 font-poppins text-gray-800">
@@ -308,20 +718,15 @@ export default function Report() {
   if (loading) {
     return (
       <div className="bg-white w-full min-h-screen font-poppins flex flex-col items-center relative">
-        {/* Loading overlay */}
         <LoadingOverlay />
         
         <div className="w-full">
           <Example />
         </div>
         
-        {/* Skeleton content */}
         <div className="w-full max-w-6xl border border-gray-200 my-6 md:my-10 mx-4 p-4 md:p-6 space-y-6 text-gray-800 opacity-30">
-          {/* Header skeleton */}
           <HeaderSkeleton />
-          {/* Patient info skeleton */}
           <PatientInfoSkeleton />
-          {/* Clinical details skeleton */}
           <div className="px-3 sm:px-4 space-y-3">
             <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
             <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3"></div>
@@ -360,7 +765,6 @@ export default function Report() {
         </div>
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="text-center">
-            {/* Animated pulse icon */}
             <div className="mb-6">
               <div className="w-16 h-16 md:w-20 md:h-20 mx-auto bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center animate-pulse">
                 <svg className="w-8 h-8 md:w-10 md:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -369,7 +773,6 @@ export default function Report() {
               </div>
             </div>
             
-            {/* Animated text */}
             <div className="space-y-3">
               <h3 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gray-700 animate-fade-in-up">
                 Report Generation in Progress
@@ -382,7 +785,6 @@ export default function Report() {
               </p>
             </div>
             
-            {/* Loading dots */}
             <div className="flex justify-center space-x-1 mt-6">
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
               <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce animation-delay-100"></div>
@@ -400,14 +802,45 @@ export default function Report() {
         <Example />
       </div>
 
+      {/* Download Word Button */}
+      <div className="w-full max-w-6xl px-4 mt-6 flex justify-end">
+        <button
+          onClick={downloadWord}
+          disabled={downloadingPDF}
+          className={`flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 ${
+            downloadingPDF ? 'opacity-50 cursor-not-allowed' : 'hover:from-[#4a7a3a] hover:to-[#3d6330]'
+          }`}
+        >
+          {downloadingPDF ? (
+            <>
+              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Generating Document...</span>
+            </>
+          ) : (
+            <>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>Download</span>
+            </>
+          )}
+        </button>
+      </div>
+
       {/* Main report container */}
-      <div className="w-full max-w-6xl border border-black my-6 md:my-10 mx-4 p-4 md:p-6 space-y-6 text-gray-800 animate-fade-in">
+      <div 
+        ref={reportRef}
+        className="w-full max-w-6xl border border-black my-6 md:my-10 mx-4 p-4 md:p-6 space-y-6 text-gray-800 animate-fade-in"
+      >
         {/* Header */}
         <div className="text-center space-y-2">
           <h2 className="text-base sm:text-lg md:text-xl font-poppins font-bold">
-            Ankad Cutiscience (Dermoscopy Analysis)
+            Dermoscopy Report
           </h2>
-          <h3 className="text-sm sm:text-base font-semibold font-poppins">Dr B S Ankad</h3>
+          <h3 className="text-sm sm:text-base font-semibold font-poppins">Dr ANKAD'S EAGLES EYE Dermoscopy Services</h3>
           <p className="text-xs sm:text-sm md:text-base font-medium font-poppins">Bagalkot</p>
         </div>
 

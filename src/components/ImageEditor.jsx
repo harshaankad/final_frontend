@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-export default function ImageEditor({ imageUrl, onEditComplete }) {
+export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }) {
   const canvasRef = useRef(null);
   const [color, setColor] = useState('#000000');
   const [isDrawing, setIsDrawing] = useState(false);
@@ -23,16 +23,12 @@ export default function ImageEditor({ imageUrl, onEditComplete }) {
     img.crossOrigin = 'anonymous';
 
     img.onload = () => {
-      // Set canvas dimensions to match image dimensions
       const { naturalWidth, naturalHeight } = img;
       setImageDimensions({ width: naturalWidth, height: naturalHeight });
-      
       canvas.width = naturalWidth;
       canvas.height = naturalHeight;
-      
       setBackgroundImage(img);
       setImageLoaded(true);
-      // Draw the image at its original size
       ctx.drawImage(img, 0, 0, naturalWidth, naturalHeight);
     };
 
@@ -90,7 +86,6 @@ export default function ImageEditor({ imageUrl, onEditComplete }) {
     });
   };
 
-  // ✅ Automatically redraw canvas when shapes change
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !backgroundImage) return;
@@ -164,10 +159,9 @@ export default function ImageEditor({ imageUrl, onEditComplete }) {
   };
 
   const clearCanvas = () => {
-    setShapes([]);
+    setShapes((prevShapes) => prevShapes.slice(0, -1));
   };
 
-  // Function to save the edited image
   const saveEditedImage = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -175,18 +169,12 @@ export default function ImageEditor({ imageUrl, onEditComplete }) {
     canvas.toBlob((blob) => {
       if (blob) {
         const timestamp = Date.now();
-        const file = new File([blob], `edited_image_${timestamp}.png`, { 
+        const file = new File([blob], `edited_image_${timestamp}.png`, {
           type: 'image/png',
-          lastModified: timestamp
+          lastModified: timestamp,
         });
+
         console.log('Created file:', file);
-        console.log('File details:', {
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          lastModified: file.lastModified
-        });
-        
         if (onEditComplete) {
           onEditComplete(file);
         }
@@ -244,7 +232,7 @@ export default function ImageEditor({ imageUrl, onEditComplete }) {
             onClick={clearCanvas}
             className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-[#EAFFF0] to-[#E0F9E6] text-[#242424] font-semibold text-base border-2 border-black rounded-[6px] transform transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-green-300/50 hover:border-black hover:bg-gradient-to-r hover:from-green-50 hover:to-green-100 min-w-[100px] h-[42px] relative overflow-hidden group"
           >
-            <span className="relative z-10">Clear</span>
+            <span className="relative z-10">Undo</span>
             <div className="absolute inset-0 bg-gradient-to-r from-green-200/30 to-emerald-200/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
           </button>
 
@@ -260,6 +248,13 @@ export default function ImageEditor({ imageUrl, onEditComplete }) {
             )}
           </button>
         </div>
+
+        {/* Download Button - Rendered if passed as prop */}
+        {downloadButton && (
+          <div className="flex justify-center w-full">
+            {downloadButton}
+          </div>
+        )}
 
         {!imageLoaded && imageUrl && (
           <div className="text-center text-gray-500">
