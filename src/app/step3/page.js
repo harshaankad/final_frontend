@@ -1,10 +1,8 @@
 'use client'
 
-import * as THREE from 'three';
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Region from '@/components/region';
 import Example from "@/components/navbar";
 import { useForm } from '../../context/context';
@@ -12,6 +10,7 @@ import { useForm } from '../../context/context';
 export default function Step3() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [attempted, setAttempted] = useState(false);
 
   const {
     firstName,
@@ -24,10 +23,9 @@ export default function Step3() {
     dermoscopePhotos,
     siteOfInfection,
     setPatientId,
-    setSiteOfInfection, 
+    setSiteOfInfection,
   } = useForm();
 
-  // Function to get token from localStorage safely
   const getAuthToken = () => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("authToken");
@@ -35,23 +33,22 @@ export default function Step3() {
     return null;
   };
 
-  // Validation function
   const validateForm = () => {
     if (!firstName || !lastName || !age || !gender || !duration || !previousTreatment) {
       alert("Please complete all steps starting from Step 1.");
       return false;
     }
-    
+
     if (!nakedEyePhoto || !dermoscopePhotos || dermoscopePhotos.length === 0) {
       alert("Please upload required photos in Step 2.");
       return false;
     }
-    
+
     if (!siteOfInfection) {
-      alert("Please select the site of infection.");
+      setAttempted(true);
       return false;
     }
-    
+
     return true;
   };
 
@@ -81,7 +78,7 @@ export default function Step3() {
     formData.append("previousTreatment", previousTreatment);
     formData.append("siteOfInfection", siteOfInfection);
     formData.append("nakedEyePhoto", nakedEyePhoto);
-    
+
     dermoscopePhotos.forEach((photo) => {
       formData.append("dermoscopePhotos", photo);
     });
@@ -104,12 +101,10 @@ export default function Step3() {
       }
 
       const data = await response.json();
-      console.log("Server response:", data);
 
       if (data.success) {
         setPatientId(data.data._id);
-        console.log("Patient id: ", data.data._id);
-        router.push("/patients");
+        router.push("/step4");
       } else {
         alert(data.message || "Failed to create patient. Please try again.");
       }
@@ -121,17 +116,14 @@ export default function Step3() {
     }
   };
 
-  // Check if form can be submitted
   const canSubmit = () => {
-    return firstName && lastName && age && gender && duration && 
-           previousTreatment && nakedEyePhoto && dermoscopePhotos && 
+    return firstName && lastName && age && gender && duration &&
+           previousTreatment && nakedEyePhoto && dermoscopePhotos &&
            dermoscopePhotos.length > 0 && siteOfInfection;
   };
 
-  // Handle site selection from Region component
   const handleSiteSelection = (site) => {
     setSiteOfInfection(site);
-    alert(`You have selected ${site} as the site of infection`);
   };
 
   return (
@@ -168,31 +160,49 @@ export default function Step3() {
       {/* FORM */}
       <form onSubmit={submitForm} className="flex flex-col w-full max-w-xl mx-auto mt-6 text-black p-4 gap-2">
 
-        <span className="text-left sm:text-4xl text-3xl font-medium font-poppins text-black my-8">
+        <span className="text-left text-xl sm:text-2xl lg:text-3xl font-medium font-poppins text-black my-4 sm:my-8">
           Select Region for {firstName}
         </span>
 
         {/* Summary of uploaded data */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+        <div className={`rounded-lg p-4 mb-6 transition-all duration-300 ${siteOfInfection ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
           <h3 className="font-semibold text-lg mb-2">Summary:</h3>
           <div className="text-sm text-gray-600 space-y-1">
             <p><span className="font-medium">Patient:</span> {firstName} {lastName}</p>
-            <p><span className="font-medium">Photos:</span> 1 naked eye, {dermoscopePhotos?.length || 0} dermoscope</p>
-            <p><span className="font-medium">Site selected:</span> {siteOfInfection || "Not selected"}</p>
+            <p><span className="font-medium">Photos:</span> 1 clinical eye, {dermoscopePhotos?.length || 0} dermoscope</p>
+            <p className="flex items-center gap-2">
+              <span className="font-medium">Site selected:</span>
+              {siteOfInfection ? (
+                <span className="inline-flex items-center gap-1 text-[#5F8D4E] font-semibold">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  {siteOfInfection}
+                </span>
+              ) : (
+                <span className="text-gray-400 italic">Not selected</span>
+              )}
+            </p>
           </div>
         </div>
 
         <div className="flex flex-col justify-center items-center h-[80vh]">
           <div className="w-full h-[75vh]">
-            {/* Pass handleSiteSelection to Region */}
             <Region onSelectSite={handleSiteSelection} />
           </div>
+
+          {/* Validation - only after attempt */}
+          {attempted && !siteOfInfection && (
+            <div className="text-red-500 text-sm font-poppins mt-2 text-center">
+              * Please select the site of infection to continue.
+            </div>
+          )}
 
           {/* Navigation Buttons */}
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 w-full max-w-md">
             <Link href="/step2" className="w-full sm:w-auto order-2 sm:order-1">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="w-full sm:w-auto font-bold text-base sm:text-lg h-[45px] sm:h-[49px] rounded-[7px] px-4 sm:px-6 py-2.5 font-poppins border-2 border-[#5F8D4E] text-[#5F8D4E] hover:bg-[#5F8D4E] hover:text-white transition-all duration-300 min-w-[120px]"
               >
                 Back
@@ -216,19 +226,8 @@ export default function Step3() {
                         fill="none"
                         viewBox="0 0 24 24"
                       >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
                     )}
                     {loading ? "Creating Patient..." : "Create Patient"}
@@ -238,7 +237,7 @@ export default function Step3() {
               ) : (
                 <button
                   type="button"
-                  disabled={true}
+                  onClick={() => setAttempted(true)}
                   className="w-full sm:w-auto font-bold text-base sm:text-lg md:text-xl h-[45px] sm:h-[49px] rounded-[7px] px-4 sm:px-6 py-2.5 font-poppins min-w-[120px] bg-gray-400 text-gray-600 cursor-not-allowed opacity-50"
                 >
                   Complete All Steps
@@ -247,12 +246,6 @@ export default function Step3() {
             </div>
           </div>
         </div>
-
-        {!canSubmit() && (
-          <div className="text-red-500 text-sm font-poppins mt-2 text-center">
-            * Please complete all previous steps and select the site of infection to continue.
-          </div>
-        )}
       </form>
     </div>
   );

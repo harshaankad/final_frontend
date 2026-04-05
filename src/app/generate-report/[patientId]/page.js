@@ -23,6 +23,7 @@ export default function AdminGenerate() {
   const [editedDermoscopeFiles, setEditedDermoscopeFiles] = useState([]);
   const [nakedEyeSaved, setNakedEyeSaved] = useState(false);
   const [dermoscopeSavedStates, setDermoscopeSavedStates] = useState([]);
+  const [formError, setFormError] = useState('');
 
   const BASE_URL = 'https://dermatology-backend-8xqf.onrender.com/api';
 
@@ -55,7 +56,7 @@ export default function AdminGenerate() {
         }
 
         setPatient(data.data.patient);
-        
+
         if (data.data.patient.dermoscopePhotos) {
           const photosCount = data.data.patient.dermoscopePhotos.length;
           setEditedDermoscopeFiles(new Array(photosCount).fill(null));
@@ -72,14 +73,11 @@ export default function AdminGenerate() {
   }, [patientId, router]);
 
   const handleNakedEyeEditComplete = (file) => {
-    console.log('Naked eye edit complete:', file);
     setEditedNakedEyeFile(file);
     setNakedEyeSaved(true);
   };
 
   const handleDermoscopeEditComplete = (file, index) => {
-    console.log(`Dermoscope ${index} edit complete:`, file);
-    
     setEditedDermoscopeFiles(prev => {
       const newFiles = [...prev];
       newFiles[index] = file;
@@ -94,10 +92,7 @@ export default function AdminGenerate() {
   };
 
   const downloadImage = (file, fileName) => {
-    if (!file) {
-      alert('No image to download. Please edit and save the image first.');
-      return;
-    }
+    if (!file) return;
 
     const url = URL.createObjectURL(file);
     const link = document.createElement('a');
@@ -128,36 +123,26 @@ export default function AdminGenerate() {
   };
 
   const handleGenerate = async () => {
+    setFormError('');
+
     const token = getAuthToken();
     if (!token) {
       router.push('/login');
       return;
     }
 
-    console.log('=== FRONTEND DEBUG ===');
-    console.log('dermoscopeFindings:', dermoscopeFindings);
-    console.log('clinicalImpression:', clinicalImpression);
-    console.log('editedNakedEyeFile:', editedNakedEyeFile);
-    console.log('editedDermoscopeFiles:', editedDermoscopeFiles);
-    console.log('dermoscopeSavedStates:', dermoscopeSavedStates);
+    if (!editedNakedEyeFile || !nakedEyeSaved) {
+      setFormError('Please edit and save the macroscopic image before generating the report.');
+      return;
+    }
+
+    if (!areAllDermoscopeFilesReady() || !areAllDermoscopesSaved()) {
+      setFormError('Please edit and save all dermoscopic images before generating the report.');
+      return;
+    }
 
     if (!dermoscopeFindings.trim() || !clinicalImpression.trim()) {
-      alert('Please fill in all required fields');
-      return;
-    }
-
-    if (!editedNakedEyeFile) {
-      alert('Please edit and save the naked eye image before generating the report.');
-      return;
-    }
-
-    if (!areAllDermoscopeFilesReady()) {
-      alert('Please edit and save all dermoscope images before generating the report.');
-      return;
-    }
-
-    if (!nakedEyeSaved || !areAllDermoscopesSaved()) {
-      alert('Please make sure all images have been saved after editing.');
+      setFormError('Please fill in dermoscopic findings and clinical impression.');
       return;
     }
 
@@ -166,24 +151,14 @@ export default function AdminGenerate() {
     const formData = new FormData();
     formData.append('dermoscopeFindings', dermoscopeFindings);
     formData.append('clinicalImpression', clinicalImpression);
-    formData.append('digitalSignature', 'SignedByAdmin'); 
+    formData.append('digitalSignature', 'SignedByAdmin');
     formData.append('editedNakedEyePhoto', editedNakedEyeFile);
-    
-    editedDermoscopeFiles.forEach((file, index) => {
+
+    editedDermoscopeFiles.forEach((file) => {
       formData.append('editedDermoscopePhotos', file);
     });
 
-    console.log('=== FORMDATA CONTENTS ===');
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value);
-      if (value instanceof File) {
-        console.log(`${key} - File name: ${value.name}, size: ${value.size}, type: ${value.type}`);
-      }
-    }
-
     try {
-      console.log('Sending request to:', `${BASE_URL}/admin-generate-report/${patientId}`);
-      
       const res = await fetch(`${BASE_URL}/admin-generate-report/${patientId}`, {
         method: 'POST',
         headers: {
@@ -193,16 +168,14 @@ export default function AdminGenerate() {
       });
 
       const result = await res.json();
-      console.log('Response:', result);
 
       if (!res.ok) {
-        alert(result.message || 'Error generating report');
+        setFormError(result.message || 'Error generating report');
       } else {
         router.push('/patients');
       }
     } catch (err) {
-      console.error('Error:', err);
-      alert('Something went wrong while submitting the report.');
+      setFormError('Something went wrong while submitting the report.');
     } finally {
       setGenerating(false);
     }
@@ -221,7 +194,7 @@ export default function AdminGenerate() {
   );
 
   const LoadingOverlay = () => (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center">
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
       <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center space-y-4 max-w-sm mx-4">
         <Spinner />
         <div className="text-lg font-semibold text-gray-800">Generating Report...</div>
@@ -283,8 +256,15 @@ export default function AdminGenerate() {
         <header className="w-full">
           <Example />
         </header>
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center text-red-600 text-lg sm:text-xl">Patient not found</div>
+        <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
+          <div className="text-center text-red-600 text-lg sm:text-xl font-poppins">Patient not found</div>
+          <p className="text-sm text-gray-500">The patient may have been removed or the link is invalid.</p>
+          <button
+            onClick={() => router.push('/patients')}
+            className="text-sm font-semibold text-[#5F8D4E] hover:underline font-poppins"
+          >
+            Back to Patients
+          </button>
         </div>
       </div>
     );
@@ -293,7 +273,7 @@ export default function AdminGenerate() {
   return (
     <div className="bg-white flex flex-col min-h-screen relative">
       {generating && <LoadingOverlay />}
-      
+
       <header className="w-full">
         <Example />
       </header>
@@ -304,7 +284,7 @@ export default function AdminGenerate() {
           <div className="space-y-4">
             <h2 className="text-lg sm:text-xl font-semibold text-black flex flex-col sm:flex-row items-center justify-center text-center sm:text-left">
               <span>Edit Macroscopic Image</span>
-              {nakedEyeSaved && <span className="text-green-600 text-sm mt-1 sm:mt-0 sm:ml-2">✓ Saved</span>}
+              {nakedEyeSaved && <span className="text-green-600 text-sm mt-1 sm:mt-0 sm:ml-2">&#10003; Saved</span>}
             </h2>
             <div className="flex justify-center">
               <div className="inline-block">
@@ -326,13 +306,13 @@ export default function AdminGenerate() {
               </div>
             </div>
           </div>
-          
+
           {/* Multiple Dermoscope Image Editors */}
           {patient.dermoscopePhotos.map((dermoscopeUrl, index) => (
             <div key={index} className="space-y-4">
               <h2 className="text-lg sm:text-xl font-semibold text-black flex flex-col sm:flex-row items-center justify-center text-center sm:text-left">
                 <span>Edit Dermoscopic Image {patient.dermoscopePhotos.length > 1 ? `${index + 1}` : ''}</span>
-                {dermoscopeSavedStates[index] && <span className="text-green-600 text-sm mt-1 sm:mt-0 sm:ml-2">✓ Saved</span>}
+                {dermoscopeSavedStates[index] && <span className="text-green-600 text-sm mt-1 sm:mt-0 sm:ml-2">&#10003; Saved</span>}
               </h2>
               <div className="flex justify-center">
                 <div className="inline-block">
@@ -376,7 +356,7 @@ export default function AdminGenerate() {
         <div className="mt-8 sm:mt-10 max-w-4xl mx-auto">
           <div className="bg-white border-2 border-gray-200 p-4 sm:p-6 rounded-lg space-y-6">
             <h3 className="text-lg sm:text-xl font-semibold text-black mb-4">Report Details</h3>
-            
+
             <div className="space-y-6">
               <div className="space-y-2">
                 <label className="block font-medium text-black text-sm sm:text-base" htmlFor="clinicalImpression">
@@ -409,43 +389,50 @@ export default function AdminGenerate() {
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold text-sm mb-2 text-black">Progress:</h4>
               <div className="space-y-1 text-sm">
-                <div className={`flex items-center ${nakedEyeSaved ? 'text-green-600' : 'text-gray-500'}`}>
-                  {nakedEyeSaved ? '✓' : '○'} Macroscopic image edited and saved
+                <div className={`flex items-center gap-2 ${nakedEyeSaved ? 'text-green-600' : 'text-gray-500'}`}>
+                  {nakedEyeSaved ? '&#10003;' : '○'} Macroscopic image edited and saved
                 </div>
                 {patient.dermoscopePhotos.map((_, index) => (
-                  <div key={index} className={`flex items-center ${dermoscopeSavedStates[index] ? 'text-green-600' : 'text-gray-500'}`}>
-                    {dermoscopeSavedStates[index] ? '✓' : '○'} Dermoscopic image {patient.dermoscopePhotos.length > 1 ? `${index + 1} ` : ''}edited and saved
+                  <div key={index} className={`flex items-center gap-2 ${dermoscopeSavedStates[index] ? 'text-green-600' : 'text-gray-500'}`}>
+                    {dermoscopeSavedStates[index] ? '&#10003;' : '○'} Dermoscopic image {patient.dermoscopePhotos.length > 1 ? `${index + 1} ` : ''}edited and saved
                   </div>
                 ))}
-                <div className={`flex items-center ${dermoscopeFindings.trim() ? 'text-green-600' : 'text-gray-500'}`}>
-                  {dermoscopeFindings.trim() ? '✓' : '○'} Dermoscopic findings entered
+                <div className={`flex items-center gap-2 ${dermoscopeFindings.trim() ? 'text-green-600' : 'text-gray-500'}`}>
+                  {dermoscopeFindings.trim() ? '&#10003;' : '○'} Dermoscopic findings entered
                 </div>
-                <div className={`flex items-center ${clinicalImpression.trim() ? 'text-green-600' : 'text-gray-500'}`}>
-                  {clinicalImpression.trim() ? '✓' : '○'} Clinical impression entered
+                <div className={`flex items-center gap-2 ${clinicalImpression.trim() ? 'text-green-600' : 'text-gray-500'}`}>
+                  {clinicalImpression.trim() ? '&#10003;' : '○'} Clinical impression entered
                 </div>
               </div>
             </div>
+
+            {/* Error message */}
+            {formError && (
+              <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg flex items-center justify-between">
+                <span className="text-sm">{formError}</span>
+                <button onClick={() => setFormError('')} className="text-red-700 hover:text-red-900 ml-4">
+                  <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t justify-center">
               <Button
                 onClick={handleGenerate}
                 disabled={
-                  generating || 
-                  !nakedEyeSaved || 
-                  !areAllDermoscopesSaved() || 
-                  !dermoscopeFindings.trim() || 
+                  generating ||
+                  !nakedEyeSaved ||
+                  !areAllDermoscopesSaved() ||
+                  !dermoscopeFindings.trim() ||
                   !clinicalImpression.trim()
                 }
                 className="w-full sm:w-auto font-bold text-lg sm:text-xl h-[49px] sm:h-[49px] rounded-[7px] px-6 sm:px-5 py-2.5 transform transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-300/50 min-w-[120px] bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] hover:from-[#4a7a3a] hover:to-[#3d6330] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
               >
                 <span className="relative z-10">
-                  Generate Report
-                  {(!nakedEyeSaved || !areAllDermoscopesSaved()) && 
-                    <span className="block sm:inline text-xs mt-1 sm:mt-0 sm:ml-2">
-                      (Save {!nakedEyeSaved ? 'macroscopic' : ''} {!nakedEyeSaved && !areAllDermoscopesSaved() ? 'and ' : ''} {!areAllDermoscopesSaved() ? 'all dermoscopic ' : ''}images first)
-                    </span>
-                  }
+                  {generating ? 'Generating...' : 'Generate Report'}
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-600/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
               </Button>

@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import Image from 'next/image';
 import Example from '@/components/navbar';
 import Spinner from '@/components/Spinner';
@@ -18,6 +17,7 @@ export default function Report() {
   const [imageLoading, setImageLoading] = useState({});
   const [imagesInitialized, setImagesInitialized] = useState(false);
   const [downloadingPDF, setDownloadingPDF] = useState(false);
+  const [downloadError, setDownloadError] = useState('');
   const reportRef = useRef(null);
 
   const BASE_URL = 'https://dermatology-backend-8xqf.onrender.com/api';
@@ -50,7 +50,6 @@ export default function Report() {
       ...prev,
       [imageKey]: false
     }));
-    console.error(`Failed to load image: ${imageKey}`);
   };
 
   const handleImageLoad = (imageKey) => {
@@ -116,7 +115,6 @@ export default function Report() {
         reader.readAsDataURL(blob);
       });
     } catch (error) {
-      console.error('Error converting image to base64:', error);
       return null;
     }
   };
@@ -143,125 +141,80 @@ export default function Report() {
     
     try {
       // Dynamically import libraries
-      const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, ImageRun, convertInchesToTwip } = await import('docx');
+      const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, ImageRun } = await import('docx');
 
       const children = [];
 
-      // Header with better styling
+      // Header - matches UI exactly
       children.push(
         new Paragraph({
-          children: [
-            new TextRun({
-              text: 'Dermoscopy Report',
-              bold: true,
-              size: 32,
-              color: "000000"
-            })
-          ],
-          heading: HeadingLevel.HEADING_1,
+          children: [new TextRun({ text: 'DermDrishti', bold: true, size: 36, color: "000000" })],
           alignment: AlignmentType.CENTER,
-          spacing: { after: 300, before: 200 },
-          border: {
-            bottom: {
-              color: "000000",
-              space: 1,
-              style: BorderStyle.SINGLE,
-              size: 24
-            }
-          }
+          spacing: { after: 100, before: 200 }
         }),
         new Paragraph({
-          children: [
-            new TextRun({
-              text: "Dr ANKAD'S EAGLES EYE Dermoscopy Services" ,
-              bold: true,
-              size: 24,
-              color: "000000"
-            })
-          ],
+          children: [new TextRun({ text: 'Dermoscopy Reporting Services', bold: true, size: 26, color: "000000" })],
           alignment: AlignmentType.CENTER,
           spacing: { after: 150 }
         }),
         new Paragraph({
-          children: [
-            new TextRun({
-              text: 'Bagalkot',
-              size: 22,
-              color: "000000"
-            })
-          ],
+          children: [new TextRun({ text: 'By', size: 22, color: "000000" })],
           alignment: AlignmentType.CENTER,
-          spacing: { after: 500 }
+          spacing: { after: 100 }
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: 'Professor Balachandra S Ankad', bold: true, size: 24, color: "000000" })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 80 }
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: 'Dermatologist and Dermatoscopist', size: 22, color: "000000", italics: true })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 80 }
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: 'drbsankad@gmail.com; 9980410056', size: 20, color: "000000" })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 400 }
         })
       );
 
-      // Patient Info Table with darker borders and better styling
+      // Patient Info Table - 1 row, 3 columns with columnWidths to prevent squeezing
+      const thinBorder = { style: BorderStyle.SINGLE, size: 1, color: "000000" };
       const patientInfoTable = new Table({
-        width: { size: 100, type: WidthType.PERCENTAGE },
-        borders: {
-          top: { style: BorderStyle.SINGLE, size: 30, color: "000000" },
-          bottom: { style: BorderStyle.SINGLE, size: 30, color: "000000" },
-          left: { style: BorderStyle.SINGLE, size: 30, color: "000000" },
-          right: { style: BorderStyle.SINGLE, size: 30, color: "000000" },
-          insideHorizontal: { style: BorderStyle.SINGLE, size: 20, color: "000000" },
-          insideVertical: { style: BorderStyle.SINGLE, size: 20, color: "000000" }
-        },
+        columnWidths: [3300, 3300, 3400],
         rows: [
           new TableRow({
             children: [
               new TableCell({
-                children: [
-                  new Paragraph({
-                    children: [
-                      new TextRun({ text: 'Name: ', bold: true, size: 22, color: "000000" }),
-                      new TextRun({ text: `${patient.firstname} ${patient.lastname}`, size: 22, color: "000000" })
-                    ],
-                    spacing: { before: 100, after: 100 }
-                  })
-                ],
-                width: { size: 33, type: WidthType.PERCENTAGE },
-                margins: {
-                  top: convertInchesToTwip(0.1),
-                  bottom: convertInchesToTwip(0.1),
-                  left: convertInchesToTwip(0.15),
-                  right: convertInchesToTwip(0.15)
-                }
+                children: [new Paragraph({
+                  children: [
+                    new TextRun({ text: 'Name: ', bold: true, size: 20, color: "000000" }),
+                    new TextRun({ text: `${patient.firstname} ${patient.lastname}`, size: 20, color: "000000" })
+                  ],
+                  spacing: { before: 80, after: 80 }
+                })],
+                borders: { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder }
               }),
               new TableCell({
-                children: [
-                  new Paragraph({
-                    children: [
-                      new TextRun({ text: 'Age / Sex: ', bold: true, size: 22, color: "000000" }),
-                      new TextRun({ text: `${patient.age} / ${patient.gender}`, size: 22, color: "000000" })
-                    ],
-                    spacing: { before: 100, after: 100 }
-                  })
-                ],
-                width: { size: 33, type: WidthType.PERCENTAGE },
-                margins: {
-                  top: convertInchesToTwip(0.1),
-                  bottom: convertInchesToTwip(0.1),
-                  left: convertInchesToTwip(0.15),
-                  right: convertInchesToTwip(0.15)
-                }
+                children: [new Paragraph({
+                  children: [
+                    new TextRun({ text: 'Age / Sex: ', bold: true, size: 20, color: "000000" }),
+                    new TextRun({ text: `${patient.age} / ${patient.gender}`, size: 20, color: "000000" })
+                  ],
+                  spacing: { before: 80, after: 80 }
+                })],
+                borders: { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder }
               }),
               new TableCell({
-                children: [
-                  new Paragraph({
-                    children: [
-                      new TextRun({ text: 'Date: ', bold: true, size: 22, color: "000000" }),
-                      new TextRun({ text: `${new Date(patient.createdAt).toLocaleDateString()}`, size: 22, color: "000000" })
-                    ],
-                    spacing: { before: 100, after: 100 }
-                  })
-                ],
-                width: { size: 34, type: WidthType.PERCENTAGE },
-                margins: {
-                  top: convertInchesToTwip(0.1),
-                  bottom: convertInchesToTwip(0.1),
-                  left: convertInchesToTwip(0.15),
-                  right: convertInchesToTwip(0.15)
-                }
+                children: [new Paragraph({
+                  children: [
+                    new TextRun({ text: 'Date: ', bold: true, size: 20, color: "000000" }),
+                    new TextRun({ text: new Date(patient.createdAt).toLocaleDateString(), size: 20, color: "000000" })
+                  ],
+                  spacing: { before: 80, after: 80 }
+                })],
+                borders: { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder }
               })
             ]
           })
@@ -269,82 +222,57 @@ export default function Report() {
       });
 
       children.push(patientInfoTable);
-      children.push(new Paragraph({ text: '', spacing: { after: 400 } }));
+      children.push(new Paragraph({ text: '', spacing: { after: 300 } }));
 
-      // Clinical Details with better formatting
+      // Clinical Details - matches UI
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: 'Site of lesion: ', bold: true, size: 24, color: "000000" }),
-            new TextRun({ text: patient.siteOfInfection, size: 24, color: "000000" })
+            new TextRun({ text: 'Site of lesion: ', bold: true, size: 22, color: "000000" }),
+            new TextRun({ text: patient.siteOfInfection, size: 22, color: "000000" })
           ],
-          spacing: { after: 250 }
+          spacing: { after: 150 }
         }),
         new Paragraph({
           children: [
-            new TextRun({ text: 'Duration of Symptoms: ', bold: true, size: 24, color: "000000" }),
-            new TextRun({ text: patient.duration, size: 24, color: "000000" })
+            new TextRun({ text: 'Duration of Symptoms: ', bold: true, size: 22, color: "000000" }),
+            new TextRun({ text: patient.duration, size: 22, color: "000000" })
           ],
-          spacing: { after: 250 }
+          spacing: { after: 150 }
         }),
         new Paragraph({
           children: [
-            new TextRun({ text: 'Clinical Impression: ', bold: true, size: 24, color: "000000" }),
-            new TextRun({ text: report.clinicalImpression, size: 24, color: "000000" })
+            new TextRun({ text: 'Clinical Impression: ', bold: true, size: 22, color: "000000" }),
+            new TextRun({ text: report.clinicalImpression, size: 22, color: "000000" })
           ],
-          spacing: { after: 500 }
+          spacing: { after: 400 }
         })
       );
 
-      // Dermoscopic Findings Box with darker borders
+      // Dermoscopic Findings Box - single cell table like the UI's bordered box
       const dermoscopicTable = new Table({
-        width: { size: 100, type: WidthType.PERCENTAGE },
-        borders: {
-          top: { style: BorderStyle.SINGLE, size: 30, color: "000000" },
-          bottom: { style: BorderStyle.SINGLE, size: 30, color: "000000" },
-          left: { style: BorderStyle.SINGLE, size: 30, color: "000000" },
-          right: { style: BorderStyle.SINGLE, size: 30, color: "000000" }
-        },
+        columnWidths: [10000],
         rows: [
           new TableRow({
             children: [
               new TableCell({
                 children: [
                   new Paragraph({
-                    children: [
-                      new TextRun({
-                        text: 'Dermoscopic findings:',
-                        bold: true,
-                        size: 26,
-                        color: "000000"
-                      })
-                    ],
-                    spacing: { after: 300 }
+                    children: [new TextRun({ text: 'Dermoscopic findings:', bold: true, size: 24, color: "000000" })],
+                    spacing: { after: 200 }
+                  }),
+                  new Paragraph({
+                    children: [new TextRun({ text: report.dermoscopeFindings, size: 22, color: "000000" })],
+                    spacing: { after: 200 }
                   }),
                   new Paragraph({
                     children: [
-                      new TextRun({
-                        text: report.dermoscopeFindings,
-                        size: 24,
-                        color: "000000"
-                      })
-                    ],
-                    spacing: { after: 300 },
-                    alignment: AlignmentType.JUSTIFIED
-                  }),
-                  new Paragraph({
-                    children: [
-                      new TextRun({ text: 'Impression: ', bold: true, size: 24, color: "000000" }),
-                      new TextRun({ text: report.clinicalImpression, size: 24, color: "000000" })
+                      new TextRun({ text: 'Impression: ', bold: true, size: 22, color: "000000" }),
+                      new TextRun({ text: report.clinicalImpression, size: 22, color: "000000" })
                     ]
                   })
                 ],
-                margins: {
-                  top: convertInchesToTwip(0.2),
-                  bottom: convertInchesToTwip(0.2),
-                  left: convertInchesToTwip(0.2),
-                  right: convertInchesToTwip(0.2)
-                }
+                borders: { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder }
               })
             ]
           })
@@ -352,31 +280,14 @@ export default function Report() {
       });
 
       children.push(dermoscopicTable);
-      children.push(new Paragraph({ text: '', spacing: { after: 500 } }));
+      children.push(new Paragraph({ text: '', spacing: { after: 400 } }));
 
-      // Medical Images Section with better styling
+      // Medical Images Section
       children.push(
         new Paragraph({
-          children: [
-            new TextRun({
-              text: 'Medical Images',
-              bold: true,
-              size: 32,
-              color: "000000",
-              underline: {}
-            })
-          ],
-          heading: HeadingLevel.HEADING_1,
+          children: [new TextRun({ text: 'Medical Images', bold: true, size: 28, color: "000000", underline: {} })],
           alignment: AlignmentType.CENTER,
-          spacing: { before: 600, after: 400 },
-          border: {
-            top: {
-              color: "000000",
-              space: 1,
-              style: BorderStyle.SINGLE,
-              size: 24
-            }
-          }
+          spacing: { before: 400, after: 300 }
         })
       );
 
@@ -502,9 +413,9 @@ export default function Report() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
-    } catch (error) {
-      console.error('Error generating Word document:', error);
-      alert('Failed to generate Word document. Please try again.');
+    } catch (err) {
+      console.error('Word doc error:', err);
+      setDownloadError('Failed to generate Word document. Please try again.');
     } finally {
       setDownloadingPDF(false);
     }
@@ -584,7 +495,7 @@ export default function Report() {
   );
 
   const LoadingOverlay = () => (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center">
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
       <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center space-y-4 max-w-sm mx-4">
         <Spinner />
         <div className="text-lg font-semibold text-gray-800">Loading Report...</div>
@@ -748,9 +659,15 @@ export default function Report() {
             <div className="text-red-500 text-lg md:text-xl mb-4">
               Oops! Something went wrong
             </div>
-            <div className="text-red-400 text-sm md:text-base">
+            <div className="text-red-400 text-sm md:text-base mb-6">
               {error}
             </div>
+            <button
+              onClick={() => router.push('/patients')}
+              className="font-bold text-base h-[45px] rounded-[7px] px-6 py-2.5 font-poppins border-2 border-[#5F8D4E] text-[#5F8D4E] hover:bg-[#5F8D4E] hover:text-white transition-all duration-300"
+            >
+              Back to Patients
+            </button>
           </div>
         </div>
       </div>
@@ -766,7 +683,7 @@ export default function Report() {
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="text-center">
             <div className="mb-6">
-              <div className="w-16 h-16 md:w-20 md:h-20 mx-auto bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center animate-pulse">
+              <div className="w-16 h-16 md:w-20 md:h-20 mx-auto bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] rounded-full flex items-center justify-center animate-pulse">
                 <svg className="w-8 h-8 md:w-10 md:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
@@ -786,10 +703,17 @@ export default function Report() {
             </div>
             
             <div className="flex justify-center space-x-1 mt-6">
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-              <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce animation-delay-100"></div>
-              <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce animation-delay-200"></div>
+              <div className="w-2 h-2 bg-[#5F8D4E] rounded-full animate-bounce"></div>
+              <div className="w-2 h-2 bg-[#4a7a3a] rounded-full animate-bounce animation-delay-100"></div>
+              <div className="w-2 h-2 bg-[#3d6330] rounded-full animate-bounce animation-delay-200"></div>
             </div>
+
+            <button
+              onClick={() => router.push('/patients')}
+              className="mt-8 font-bold text-base h-[45px] rounded-[7px] px-6 py-2.5 font-poppins border-2 border-[#5F8D4E] text-[#5F8D4E] hover:bg-[#5F8D4E] hover:text-white transition-all duration-300"
+            >
+              Back to Patients
+            </button>
           </div>
         </div>
       </div>
@@ -801,6 +725,20 @@ export default function Report() {
       <div className="w-full">
         <Example />
       </div>
+
+      {/* Download Error */}
+      {downloadError && (
+        <div className="w-full max-w-6xl px-4 mt-4">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between">
+            <p className="text-red-700 text-sm font-poppins">{downloadError}</p>
+            <button onClick={() => setDownloadError('')} className="text-red-400 hover:text-red-600 ml-4">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Download Word Button */}
       <div className="w-full max-w-6xl px-4 mt-6 flex justify-end">
@@ -837,11 +775,14 @@ export default function Report() {
       >
         {/* Header */}
         <div className="text-center space-y-2">
-          <h2 className="text-base sm:text-lg md:text-xl font-poppins font-bold">
-            Dermoscopy Report
+          <h2 className="text-lg sm:text-xl md:text-2xl font-poppins font-bold">
+            DermDrishti
           </h2>
-          <h3 className="text-sm sm:text-base font-semibold font-poppins">Dr ANKAD'S EAGLES EYE Dermoscopy Services</h3>
-          <p className="text-xs sm:text-sm md:text-base font-medium font-poppins">Bagalkot</p>
+          <h3 className="text-sm sm:text-base font-semibold font-poppins">Dermoscopy Reporting Services</h3>
+          <p className="text-xs sm:text-sm font-medium font-poppins italic">By</p>
+          <p className="text-sm sm:text-base font-semibold font-poppins">Professor Balachandra S Ankad</p>
+          <p className="text-xs sm:text-sm font-medium font-poppins italic">Dermatologist and Dermatoscopist</p>
+          <p className="text-xs sm:text-sm font-poppins text-gray-600">drbsankad@gmail.com; 9980410056</p>
         </div>
 
         {/* Patient info grid */}

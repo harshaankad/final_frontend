@@ -58,18 +58,16 @@ export default function HeaderSection() {
 
 
       {/* Main Content */}
-      <div className="relative z-10 w-full px-4 sm:px-6 md:px-8 lg:px-16 -mt-10 xl:px-[134px] pt-4 sm:pt-6 md:pt-8 lg:pt-12 pb-8 sm:pb-12 md:pb-16 lg:pb-20">
+      <div className="relative z-10 w-full px-4 sm:px-6 md:px-8 lg:px-16 -mt-24 xl:px-[134px] pt-4 sm:pt-6 md:pt-8 lg:pt-12 pb-8 sm:pb-12 md:pb-16 lg:pb-20">
         <div className="max-w-[1000px] mx-auto lg:mx-0">
           <div className="mb-8 sm:mb-10 md:mb-12 relative">            
             <div className="relative">
  <h1
-  className={`font-['Anek_Telugu-SemiBold',Helvetica] font-semibold text-[#1a1a1a] transition-colors duration-200 cursor-pointer text-3xl sm:text-4xl md:text-5xl lg:text-[60px] tracking-[0.13px] leading-tight sm:leading-[1.2] md:leading-[1.3] lg:leading-[79.4px] max-w-full lg:max-w-[654px] text-center lg:text-left transition-all duration-1000 ${
+  className={`font-['Anek_Telugu-SemiBold',Helvetica] font-semibold text-[#1a1a1a] transition-colors duration-200 cursor-pointer text-2xl sm:text-3xl md:text-4xl lg:text-[42px] tracking-[0.13px] leading-tight sm:leading-[1.2] md:leading-[1.3] lg:leading-[54px] max-w-full lg:max-w-[654px] text-center lg:text-left transition-all duration-1000 ${
     isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
   }`}
 >
-  
-  
-    Welcome to Ankad Cutiscience
+Welcome to DermDrishti- Dermoscopy Reporting Services
   
 </h1>
 
@@ -77,7 +75,7 @@ export default function HeaderSection() {
 
 
   <p className={`text-gray-700 font-paragraph text-base sm:text-lg md:text-xl lg:text-[length:var(--paragraph-font-size)] tracking-[var(--paragraph-letter-spacing)] leading-relaxed sm:leading-[1.6] md:leading-[1.7] lg:leading-[var(--paragraph-line-height)] [font-style:var(--paragraph-font-style)] mt-4 sm:mt-5 md:mt-6 lg:mt-[19px] max-w-full lg:max-w-[471px] text-center lg:text-left transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} [transition-delay:300ms]`}>
-    Trusted Dermoscopy reports and care, led by <strong className="text-green-700">Dr. B. S. Ankad</strong> with 20+ years of expertise.
+    By <strong className="text-green-700">Prof. Balachandra Ankad</strong> who is authenticated Dermoscopy expertise for more than 12 years.
   </p>
 </div>
 

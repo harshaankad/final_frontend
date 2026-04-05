@@ -35,8 +35,8 @@ export default function Signup() {
         email: formData.email,
       });
 
-      const queryString = new URLSearchParams(formData).toString();
-      router.push(`/verification-code?${queryString}`);
+      sessionStorage.setItem('signupData', JSON.stringify(formData));
+      router.push(`/verification-code`);
     } catch (error) {
       alert(error.response?.data?.error || 'Failed to send OTP');
     } finally {
@@ -49,7 +49,7 @@ export default function Signup() {
       {/* Main Content */}
       <div className={`bg-white w-full min-h-screen flex flex-col justify-center items-center py-8 px-4 sm:py-16 transition-all duration-300 ${loading ? 'blur-sm' : ''}`}>
         <h1 className="text-2xl sm:text-3xl font-semibold text-center text-black">
-          <span className="text-brandGreen">Ankad</span> CutiScience
+          <span className="text-brandGreen">Derm</span>Drishti
         </h1>
 
         <span className="text-center text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-medium font-poppins text-black my-4 sm:my-8">
@@ -158,7 +158,7 @@ export default function Signup() {
 
           {/* How Do You Know Admin? - Dropdown */}
           <div className="flex flex-col flex-1 mt-2">
-            <span className="text-sm sm:text-md font-poppins font-semibold text-black mb-1">How Do You Know Admin?</span>
+            <span className="text-sm sm:text-md font-poppins font-semibold text-black mb-1">How did you hear about us?</span>
             <select
               name="howDoYouKnowAdmin"
               value={formData.howDoYouKnowAdmin}

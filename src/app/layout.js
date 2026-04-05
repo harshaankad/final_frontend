@@ -3,8 +3,11 @@ import "./globals.css";
 import { ContextProvider } from "../context/context"; // Make sure this path is correct
 
 export const metadata = {
-  title: "DERMATOLOGY WEBSITE",
-  description: "dermatology website",
+  title: "DermDrishti",
+  description: "Dermoscopy Reporting Services by Professor Balachandra S Ankad",
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 const poppins = Poppins({

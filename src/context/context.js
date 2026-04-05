@@ -25,6 +25,7 @@ export function ContextProvider({ children }) {
   const [patientId, setPatientId] = useState(null)
   const [doctorId, setDoctorId] = useState(null)
 
+
   return (
     <AppContext.Provider value={{
       firstName,
@@ -57,6 +58,7 @@ export function ContextProvider({ children }) {
       // Step 3
       siteOfInfection,
       setSiteOfInfection,
+
     }}>
       {children}
     </AppContext.Provider>

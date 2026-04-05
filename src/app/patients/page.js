@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { User, Stethoscope } from "lucide-react";
+import { User, Stethoscope, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -60,6 +60,7 @@ export default function PatientsPage() {
   const [error, setError] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [visibleCount, setVisibleCount] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
   const observerRef = useRef();
   const router = useRouter();
 
@@ -148,9 +149,6 @@ export default function PatientsPage() {
         ? adminEndpoints[activeTab]
         : regularEndpoints[activeTab];
 
-      console.log("Fetching from endpoint:", BASE_URL + endpoint);
-      console.log("Is Admin:", isAdmin);
-
       const res = await fetch(BASE_URL + endpoint, {
         headers: {
           "Content-Type": "application/json",
@@ -167,26 +165,19 @@ export default function PatientsPage() {
       }
 
       const data = await res.json();
-      console.log("API Response:", data);
 
       if (data.success) {
-        const normalizedPatients = data.data.map((p) => {
-          console.log("Processing patient:", p.firstname, "Doctor object:", p.doctor);
-          
-          return {
-            ...p,
-            status:
-              p.status.toLowerCase() === "done"
-                ? "Completed"
-                : p.status.charAt(0).toUpperCase() + p.status.slice(1),
-            // ✅ Extract doctor name from populated data (first name only)
-            doctorName: p.doctor && p.doctor.firstname 
-              ? `Dr. ${p.doctor.firstname.trim()}`
-              : "N/A",
-          };
-        });
+        const normalizedPatients = data.data.map((p) => ({
+          ...p,
+          status:
+            p.status.toLowerCase() === "done"
+              ? "Completed"
+              : p.status.charAt(0).toUpperCase() + p.status.slice(1),
+          doctorName: p.doctor && p.doctor.firstname
+            ? `Dr. ${p.doctor.firstname.trim()}`
+            : "N/A",
+        }));
 
-        console.log("Normalized patients:", normalizedPatients);
         setPatients(normalizedPatients);
         setVisibleCount(10);
       } else {
@@ -201,22 +192,35 @@ export default function PatientsPage() {
     }
   };
 
+  // Filter patients by search query
+  const filteredPatients = patients.filter((p) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    const fullName = `${p.firstname || ""} ${p.lastname || ""}`.toLowerCase();
+    return fullName.includes(query);
+  });
+
   useEffect(() => {
-    setDisplayedPatients(patients.slice(0, visibleCount));
-  }, [patients, visibleCount]);
+    setDisplayedPatients(filteredPatients.slice(0, visibleCount));
+  }, [patients, visibleCount, searchQuery]);
+
+  // Reset visible count when search changes
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [searchQuery]);
 
   const lastPatientElementRef = useCallback(
     (node) => {
       if (loading) return;
       if (observerRef.current) observerRef.current.disconnect();
       observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && visibleCount < patients.length) {
-          setVisibleCount((prevCount) => Math.min(prevCount + 10, patients.length));
+        if (entries[0].isIntersecting && visibleCount < filteredPatients.length) {
+          setVisibleCount((prevCount) => Math.min(prevCount + 10, filteredPatients.length));
         }
       });
       if (node) observerRef.current.observe(node);
     },
-    [loading, visibleCount, patients.length]
+    [loading, visibleCount, filteredPatients.length]
   );
 
   useEffect(() => {
@@ -257,6 +261,12 @@ export default function PatientsPage() {
 
   const handleAddPatient = () => {
     router.push("/step1");
+  };
+
+  const fullName = (patient) => {
+    const first = patient.firstname || "";
+    const last = patient.lastname || "";
+    return `${first} ${last}`.trim() || "Unknown";
   };
 
   const Tabs = () => {
@@ -348,7 +358,7 @@ export default function PatientsPage() {
             List of Patients
           </h1>
           <p className="font-medium text-sm sm:text-md text-[#b5b5c3] leading-tight font-['Poppins-Medium',Helvetica]">
-            {patients.length} recorded patients
+            {filteredPatients.length} recorded patients
           </p>
           {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
         </div>
@@ -367,6 +377,20 @@ export default function PatientsPage() {
         )}
       </div>
 
+      {/* Search Bar */}
+      <div className="px-4 sm:px-8 lg:px-20 mb-4">
+        <div className="relative w-full sm:max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by patient name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full h-10 pl-10 pr-4 border border-gray-300 rounded-lg text-sm font-poppins focus:outline-none focus:ring-2 focus:ring-[#5F8D4E] focus:border-transparent transition-all duration-200"
+          />
+        </div>
+      </div>
+
       <Tabs />
 
       <div className="flex flex-col gap-6 lg:gap-8 mt-2 sm:mt-4 px-4 sm:px-8 lg:px-20 pb-8">
@@ -380,13 +404,29 @@ export default function PatientsPage() {
           ) : (
             <div className="space-y-2 sm:space-y-3">
               {displayedPatients.length === 0 ? (
-                <div className="text-center py-10 text-gray-500">
-                  No patients found.
+                <div className="flex flex-col items-center justify-center py-16 text-gray-500">
+                  <User className="w-12 h-12 text-gray-300 mb-4" />
+                  <p className="text-lg font-medium font-poppins mb-1">
+                    {searchQuery ? "No matching patients found" : "No patients found"}
+                  </p>
+                  <p className="text-sm text-gray-400 mb-4">
+                    {searchQuery
+                      ? "Try a different search term"
+                      : isAdmin
+                        ? "No patients in this category yet"
+                        : "Get started by adding your first patient"}
+                  </p>
+                  {!isAdmin && !searchQuery && (
+                    <button
+                      onClick={handleAddPatient}
+                      className="text-sm font-semibold text-[#5F8D4E] hover:underline font-poppins"
+                    >
+                      + Add Patient
+                    </button>
+                  )}
                 </div>
               ) : (
                 displayedPatients.map((patient, index) => (
-                  console.log("Patient object:", patient),
-
                   <div
                     key={patient._id}
                     ref={
@@ -415,10 +455,10 @@ export default function PatientsPage() {
                           </div>
                           <div className="flex flex-col min-w-0">
                             <div className="font-semibold text-sm text-[#464e5f] truncate">
-                              {patient.firstname}
+                              {fullName(patient)}
                             </div>
                             <div className="font-medium text-xs text-[#b5b5c3]">
-                              {patient.age} • {patient.gender}
+                              {patient.age} &bull; {patient.gender}
                             </div>
                             {isAdmin && (
                               <div className="flex items-center gap-1 mt-1">
@@ -458,7 +498,7 @@ export default function PatientsPage() {
                           </div>
                           <div className="flex flex-col min-w-0">
                             <div className="font-semibold text-sm text-[#464e5f] truncate">
-                              {patient.firstname}
+                              {fullName(patient)}
                             </div>
                             <div className="font-medium text-xs text-[#b5b5c3]">
                               {patient.gender}
@@ -490,7 +530,7 @@ export default function PatientsPage() {
                       </div>
                     </div>
 
-                    {/* Desktop Layout (6 or 7 columns based on admin) */}
+                    {/* Desktop Layout */}
                     <div className="hidden lg:block">
                       <div className={`grid ${isAdmin ? 'grid-cols-7' : 'grid-cols-6'} gap-4 items-center`}>
                         <div className="flex items-center gap-4">
@@ -504,10 +544,7 @@ export default function PatientsPage() {
                           </div>
                           <div className="flex flex-col">
                             <div className="font-semibold text-sm text-[#464e5f]">
-                              {patient.firstname}
-                            </div>
-                            <div className="font-medium text-xs text-[#b5b5c3]">
-                              {patient.gender}
+                              {fullName(patient)}
                             </div>
                           </div>
                         </div>
@@ -569,8 +606,8 @@ export default function PatientsPage() {
                   </div>
                 ))
               )}
-              
-              {visibleCount < patients.length && (
+
+              {visibleCount < filteredPatients.length && (
                 <div className="text-center py-4">
                   <div className="inline-flex items-center gap-2 text-sm text-gray-500">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#5F8D4E]"></div>
@@ -594,7 +631,7 @@ export default function PatientsPage() {
             transform: translateY(0);
           }
         }
-        
+
         .animate-fadeInUp {
           animation: fadeInUp 0.6s ease-out;
         }
