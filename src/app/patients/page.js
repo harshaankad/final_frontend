@@ -66,7 +66,7 @@ export default function PatientsPage() {
   const observerRef = useRef();
   const router = useRouter();
 
-  const BASE_URL = "http://localhost:5000/api";
+  const BASE_URL = "https://dermatology-backend-8xqf.onrender.com/api";
 
   const regularEndpoints = {
     all: "/all-patients",

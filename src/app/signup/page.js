@@ -31,7 +31,7 @@ export default function Signup() {
     e.preventDefault();
     setLoading(true); // start loading
     try {
-      await axios.post('http://localhost:5000/api/auth/send-otp', {
+      await axios.post('https://dermatology-backend-8xqf.onrender.com/api/auth/send-otp', {
         email: formData.email,
       });
 

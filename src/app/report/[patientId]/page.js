@@ -20,7 +20,7 @@ export default function Report() {
   const [downloadError, setDownloadError] = useState('');
   const reportRef = useRef(null);
 
-  const BASE_URL = 'http://localhost:5000/api';
+  const BASE_URL = 'https://dermatology-backend-8xqf.onrender.com/api';
 
   const getAuthToken = () => {
     if (typeof window !== 'undefined') {
@@ -37,7 +37,7 @@ export default function Report() {
       return imagePath;
     }
     
-    const baseImageUrl = 'http://localhost:5000';
+    const baseImageUrl = 'https://dermatology-backend-8xqf.onrender.com';
     return `${baseImageUrl}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
   };
 
