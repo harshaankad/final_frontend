@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { User, Stethoscope, Search } from "lucide-react";
+import { User, Stethoscope, Search, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -61,10 +62,11 @@ export default function PatientsPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [visibleCount, setVisibleCount] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showModal, setShowModal] = useState(false);
   const observerRef = useRef();
   const router = useRouter();
 
-  const BASE_URL = "https://dermatology-backend-8xqf.onrender.com/api";
+  const BASE_URL = "http://localhost:5000/api";
 
   const regularEndpoints = {
     all: "/all-patients",
@@ -260,7 +262,7 @@ export default function PatientsPage() {
   };
 
   const handleAddPatient = () => {
-    router.push("/step1");
+    setShowModal(true);
   };
 
   const fullName = (patient) => {
@@ -347,6 +349,7 @@ export default function PatientsPage() {
   }
 
   return (
+    <>
     <Card className="flex flex-col w-full bg-white overflow-hidden mx-auto min-h-screen">
       <div className="w-full mb-6 sm:mb-8 lg:mb-10">
         <Example />
@@ -637,5 +640,87 @@ export default function PatientsPage() {
         }
       `}</style>
     </Card>
+
+    {showModal && createPortal(
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,0,0,0.6)" }}>
+        <div style={{ backgroundColor: "#ffffff", borderRadius: "16px", maxWidth: "520px", width: "90%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 25px 50px rgba(0,0,0,0.3)" }}>
+          {/* Header */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px", borderBottom: "1px solid #e5e7eb" }}>
+            <h2 style={{ fontSize: "18px", fontWeight: 600, color: "#212121", fontFamily: "Poppins, sans-serif", margin: 0 }}>
+              Submission Guidelines
+            </h2>
+            <button
+              onClick={() => setShowModal(false)}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", borderRadius: "50%" }}
+            >
+              <X style={{ width: "20px", height: "20px", color: "#6b7280" }} />
+            </button>
+          </div>
+
+          {/* Body */}
+          <div style={{ padding: "20px" }}>
+            <h3 style={{ fontSize: "14px", fontWeight: 600, color: "#5F8D4E", marginBottom: "14px", fontFamily: "Poppins, sans-serif" }}>
+              Submission Guidelines
+            </h3>
+            <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px 0", fontSize: "13px", color: "#374151", fontFamily: "Poppins, sans-serif", lineHeight: "1.6" }}>
+              <li style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "flex-start" }}>
+                <span style={{ color: "#5F8D4E", fontSize: "16px", lineHeight: "1.3", flexShrink: 0 }}>&#x2022;</span>
+                <span>Upload <strong>non-polarized</strong>, <strong>polarized</strong>, and <strong>ultraviolet-induced fluorescence</strong> (optional) images.</span>
+              </li>
+              <li style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "flex-start" }}>
+                <span style={{ color: "#5F8D4E", fontSize: "16px", lineHeight: "1.3", flexShrink: 0 }}>&#x2022;</span>
+                <span>Upload <strong>multiple dermoscopic images</strong> from different areas of the lesion for better analysis.</span>
+              </li>
+              <li style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "flex-start" }}>
+                <span style={{ color: "#5F8D4E", fontSize: "16px", lineHeight: "1.3", flexShrink: 0 }}>&#x2022;</span>
+                <span>Avoid uploading <strong>duplicate or repetitive</strong> dermoscopic images.</span>
+              </li>
+              <li style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "flex-start" }}>
+                <span style={{ color: "#5F8D4E", fontSize: "16px", lineHeight: "1.3", flexShrink: 0 }}>&#x2022;</span>
+                <span>Ensure all images are of <strong>high quality</strong> — this is essential for accurate pattern analysis.</span>
+              </li>
+              <li style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "flex-start" }}>
+                <span style={{ color: "#5F8D4E", fontSize: "16px", lineHeight: "1.3", flexShrink: 0 }}>&#x2022;</span>
+                <span>Provide <strong>complete clinical details</strong>, including history, morphology, and duration of the lesion.</span>
+              </li>
+              <li style={{ display: "flex", gap: "10px", marginBottom: "0", alignItems: "flex-start" }}>
+                <span style={{ color: "#5F8D4E", fontSize: "16px", lineHeight: "1.3", flexShrink: 0 }}>&#x2022;</span>
+                <span>Reports will be delivered within <strong>0–72 hours</strong> from the time of submission.</span>
+              </li>
+            </ul>
+
+            <div style={{ backgroundColor: "#FFF8E1", border: "1px solid #FFE082", borderRadius: "10px", padding: "16px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
+              <span style={{ fontSize: "18px", flexShrink: 0 }}>&#x26A0;&#xFE0F;</span>
+              <div>
+                <h4 style={{ fontSize: "13px", fontWeight: 700, color: "#B8860B", marginBottom: "6px", fontFamily: "Poppins, sans-serif", margin: "0 0 6px 0" }}>
+                  Disclaimer
+                </h4>
+                <p style={{ fontSize: "12.5px", color: "#6D4C00", fontFamily: "Poppins, sans-serif", lineHeight: "1.65", margin: 0 }}>
+                  Dermoscopy is an evolving field and diagnostic criteria are not yet well established for many dermatoses. Dermoscopy-based reporting may not always provide a definitive diagnosis. For therapeutic management—especially prior to initiating biological therapy or immunosuppressive treatment—<strong>histopathological examination</strong> and relevant <strong>immunohistochemical studies</strong> are strongly recommended.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div style={{ display: "flex", gap: "12px", padding: "20px", borderTop: "1px solid #e5e7eb" }}>
+            <button
+              onClick={() => setShowModal(false)}
+              style={{ flex: 1, height: "44px", borderRadius: "8px", border: "1px solid #d1d5db", backgroundColor: "#ffffff", color: "#374151", fontWeight: 600, fontSize: "14px", fontFamily: "Poppins, sans-serif", cursor: "pointer" }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => router.push("/step1")}
+              style={{ flex: 1, height: "44px", borderRadius: "8px", border: "none", backgroundColor: "#5F8D4E", color: "#ffffff", fontWeight: 600, fontSize: "14px", fontFamily: "Poppins, sans-serif", cursor: "pointer" }}
+            >
+              Agree and Continue
+            </button>
+          </div>
+        </div>
+      </div>,
+      document.body
+    )}
+    </>
   );
 }

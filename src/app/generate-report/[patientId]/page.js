@@ -25,7 +25,7 @@ export default function AdminGenerate() {
   const [dermoscopeSavedStates, setDermoscopeSavedStates] = useState([]);
   const [formError, setFormError] = useState('');
 
-  const BASE_URL = 'https://dermatology-backend-8xqf.onrender.com/api';
+  const BASE_URL = 'http://localhost:5000/api';
 
   const getAuthToken = () => {
     if (typeof window !== 'undefined') {

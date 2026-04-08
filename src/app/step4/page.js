@@ -74,7 +74,7 @@ export default function Step4() {
     setIsProcessing(true);
 
     try {
-      const orderResponse = await fetch(`https://dermatology-backend-8xqf.onrender.com/api/create-payment`, {
+      const orderResponse = await fetch(`http://localhost:5000/api/create-payment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -112,7 +112,7 @@ export default function Step4() {
         theme: { color: '#285430' },
         handler: async (response) => {
           try {
-            const verifyResponse = await fetch(`https://dermatology-backend-8xqf.onrender.com/api/verify-payment`, {
+            const verifyResponse = await fetch(`http://localhost:5000/api/verify-payment`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",

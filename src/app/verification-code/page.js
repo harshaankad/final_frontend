@@ -81,7 +81,7 @@ function VerificationCodeContent() {
 
     try {
       setLoading(true);
-      await axios.post("https://dermatology-backend-8xqf.onrender.com/api/auth/send-otp", {
+      await axios.post("http://localhost:5000/api/auth/send-otp", {
         email: signupData.email,
       });
       setResendCooldown(30);
@@ -112,7 +112,7 @@ function VerificationCodeContent() {
       };
 
       await axios.post(
-        "https://dermatology-backend-8xqf.onrender.com/api/auth/verify-otp",
+        "http://localhost:5000/api/auth/verify-otp",
         payload
       );
 
