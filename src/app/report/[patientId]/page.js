@@ -297,7 +297,7 @@ export default function Report() {
           new Paragraph({
             children: [
               new TextRun({
-                text: 'Clinical Eye Photograph',
+                text: 'Clinical Image',
                 bold: true,
                 size: 26,
                 color: "000000"
@@ -338,7 +338,7 @@ export default function Report() {
           new Paragraph({
             children: [
               new TextRun({
-                text: 'Dermoscope Photographs',
+                text: 'Dermoscopic Image',
                 bold: true,
                 size: 26,
                 color: "000000"
@@ -585,7 +585,7 @@ export default function Report() {
           {hasNakedEyePhoto && (
             <div className="mb-8">
               <h4 className="text-lg font-semibold mb-4 font-poppins text-gray-800">
-                Clinical Eye Photograph
+                Clinical Image
               </h4>
               <div className="flex justify-center">
                 {renderImage(
@@ -600,7 +600,7 @@ export default function Report() {
           {dermoscopePhotos.length > 0 && (
             <div className="mb-8">
               <h4 className="text-lg font-semibold mb-4 font-poppins text-gray-800">
-                Dermoscope Photographs
+                Dermoscopic Image
               </h4>
               <div className="space-y-6">
                 {dermoscopePhotos.map((photo, index) => {

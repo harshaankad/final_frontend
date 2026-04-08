@@ -13,6 +13,8 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
   const [shapes, setShapes] = useState([]);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageDimensions, setImageDimensions] = useState({ width: 400, height: 400 });
+  const [displayScale, setDisplayScale] = useState(1);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -30,6 +32,12 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
       setBackgroundImage(img);
       setImageLoaded(true);
       ctx.drawImage(img, 0, 0, naturalWidth, naturalHeight);
+
+      // Calculate scale to fit within viewport
+      const maxW = Math.min(window.innerWidth - 64, 900);
+      const maxH = window.innerHeight * 0.7;
+      const scale = Math.min(1, maxW / naturalWidth, maxH / naturalHeight);
+      setDisplayScale(scale);
     };
 
     img.onerror = (error) => {
@@ -40,12 +48,25 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
     img.src = imageUrl;
   }, [imageUrl]);
 
+  // Recalculate scale on window resize
+  useEffect(() => {
+    if (!imageLoaded) return;
+    const handleResize = () => {
+      const maxW = Math.min(window.innerWidth - 64, 900);
+      const maxH = window.innerHeight * 0.7;
+      const scale = Math.min(1, maxW / imageDimensions.width, maxH / imageDimensions.height);
+      setDisplayScale(scale);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [imageLoaded, imageDimensions]);
+
   const drawArrow = (ctx, fromX, fromY, toX, toY, color) => {
     const headLength = 15;
     const angle = Math.atan2(toY - fromY, toX - fromX);
 
     ctx.strokeStyle = color;
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 5;
 
     ctx.beginPath();
     ctx.moveTo(fromX, fromY);
@@ -76,7 +97,7 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
     shapes.forEach((shape) => {
       if (shape.type === 'circle') {
         ctx.strokeStyle = shape.color;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 5;
         ctx.beginPath();
         ctx.arc(shape.cx, shape.cy, shape.r, 0, 2 * Math.PI);
         ctx.stroke();
@@ -93,11 +114,19 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
     drawAll(ctx);
   }, [shapes, backgroundImage, imageDimensions]);
 
-  const handleMouseDown = (e) => {
+  const getScaledPos = (e) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
+    };
+  };
+
+  const handleMouseDown = (e) => {
+    const { x, y } = getScaledPos(e);
     setStartPos({ x, y });
     setIsDrawing(true);
   };
@@ -107,15 +136,13 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const { x, y } = getScaledPos(e);
     setCurrentPos({ x, y });
 
     drawAll(ctx);
 
     ctx.strokeStyle = color;
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 5;
 
     if (selectedTool === 'circle') {
       const radius =
@@ -135,10 +162,7 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
     if (!isDrawing) return;
     setIsDrawing(false);
 
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const { x, y } = getScaledPos(e);
 
     if (selectedTool === 'circle') {
       const radius =
@@ -193,12 +217,17 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
   return (
     <div className="max-w-full w-full mx-auto">
       <div className="flex flex-col items-center gap-4 p-4">
-        <div className="overflow-auto max-w-full max-h-[80vh] border-2 border-gray-300 bg-white">
+        <div ref={containerRef} className="max-w-full border-2 border-gray-300 bg-white" style={{ overflow: 'hidden' }}>
           <canvas
             ref={canvasRef}
             width={imageDimensions.width}
             height={imageDimensions.height}
-            className="cursor-crosshair block"
+            style={{
+              width: imageDimensions.width * displayScale,
+              height: imageDimensions.height * displayScale,
+              display: 'block',
+            }}
+            className="cursor-crosshair"
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
