@@ -158,6 +158,12 @@ html {
   --color-body-model-strong-highlight: var(--color-blue-400);
   --color-body-model-subtle-highlight: var(--color-blue-200);
 }
+.sc-body-model-svg__path[fill="#5F8D4E"] {
+  fill: #A8D5A2 !important;
+}
+.sc-body-model-svg__path[fill="#5F8D4E"]:hover {
+  fill: #8BC486 !important;
+}
 .sc-body-model {
   align-items: flex-start;
   align-items: var(--body-model-align-items, flex-start);

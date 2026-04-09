@@ -19,6 +19,7 @@ export default function Step3() {
     gender,
     duration,
     previousTreatment,
+    clinicalImpression,
     nakedEyePhoto,
     dermoscopePhotos,
     siteOfInfection,
@@ -44,7 +45,7 @@ export default function Step3() {
       return false;
     }
 
-    if (!siteOfInfection) {
+    if (!siteOfInfection || siteOfInfection.length === 0) {
       setAttempted(true);
       return false;
     }
@@ -76,7 +77,8 @@ export default function Step3() {
     formData.append("gender", gender);
     formData.append("duration", duration);
     formData.append("previousTreatment", previousTreatment);
-    formData.append("siteOfInfection", siteOfInfection);
+    formData.append("clinicalImpression", clinicalImpression);
+    formData.append("siteOfInfection", siteOfInfection.join(", "));
     formData.append("nakedEyePhoto", nakedEyePhoto);
 
     dermoscopePhotos.forEach((photo) => {
@@ -119,7 +121,7 @@ export default function Step3() {
   const canSubmit = () => {
     return firstName && lastName && age && gender && duration &&
            previousTreatment && nakedEyePhoto && dermoscopePhotos &&
-           dermoscopePhotos.length > 0 && siteOfInfection;
+           dermoscopePhotos.length > 0 && siteOfInfection.length > 0;
   };
 
   const handleSiteSelection = (site) => {
@@ -165,24 +167,28 @@ export default function Step3() {
         </span>
 
         {/* Summary of uploaded data */}
-        <div className={`rounded-lg p-4 mb-6 transition-all duration-300 ${siteOfInfection ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
+        <div className={`rounded-lg p-4 mb-6 transition-all duration-300 ${siteOfInfection.length > 0 ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
           <h3 className="font-semibold text-lg mb-2">Summary:</h3>
           <div className="text-sm text-gray-600 space-y-1">
             <p><span className="font-medium">Patient:</span> {firstName} {lastName}</p>
             <p><span className="font-medium">Photos:</span> 1 clinical eye, {dermoscopePhotos?.length || 0} dermoscope</p>
-            <p className="flex items-center gap-2">
-              <span className="font-medium">Site selected:</span>
-              {siteOfInfection ? (
-                <span className="inline-flex items-center gap-1 text-[#5F8D4E] font-semibold">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  {siteOfInfection}
-                </span>
+            <div>
+              <span className="font-medium">Sites selected:</span>
+              {siteOfInfection.length > 0 ? (
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {siteOfInfection.map((site) => (
+                    <span key={site} className="inline-flex items-center gap-1 text-[#5F8D4E] font-semibold bg-green-100 px-2 py-0.5 rounded-full text-xs">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      {site}
+                    </span>
+                  ))}
+                </div>
               ) : (
-                <span className="text-gray-400 italic">Not selected</span>
+                <span className="text-gray-400 italic ml-2">Not selected</span>
               )}
-            </p>
+            </div>
           </div>
         </div>
 
@@ -192,7 +198,7 @@ export default function Step3() {
           </div>
 
           {/* Validation - only after attempt */}
-          {attempted && !siteOfInfection && (
+          {attempted && siteOfInfection.length === 0 && (
             <div className="text-red-500 text-sm font-poppins mt-2 text-center">
               * Please select the site of infection to continue.
             </div>

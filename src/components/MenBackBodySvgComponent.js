@@ -2,7 +2,7 @@ import { useForm } from '../context/context';
 
 
 const MenBackBodySvgComponent = () => {
-  const { setSiteOfInfection } = useForm();
+  const { siteOfInfection, toggleSiteOfInfection } = useForm();
   return (
     
     <svg
@@ -19,7 +19,8 @@ const MenBackBodySvgComponent = () => {
         d="M71.376 17.117l-.353-4.81c-.033-.51-.067-1.02-.094-1.53a23.405 23.405 0 0 1-.023-.511 3.96 3.96 0 0 1-.002-.327c.006-.151.028-.302.053-.451.117-.71.336-1.401.607-2.066a10.963 10.963 0 0 1 2.999-4.14 12.05 12.05 0 0 1 2.708-1.746c1.247-.59 2.583-.982 3.94-1.223A20.938 20.938 0 0 1 84.912 0c.775.009 1.548.055 2.317.148a21.87 21.87 0 0 1 5.375 1.362 19.444 19.444 0 0 1 3.445 1.737l.038.025a10.447 10.447 0 0 1 .804.147c.584.132 1.159.317 1.664.648.167.108.324.232.47.367.667.624 1.063 1.48 1.388 2.318.07.179.136.359.199.538.107.303.208.607.308.911.028.089.028.089.054.179.183.712.219 1.453.21 2.185a24.301 24.301 0 0 1-.205 2.681l-.569 3.377-1.288.251a8.21 8.21 0 0 0-1.361.599 8.959 8.959 0 0 0-1.715 1.236c-1.502 1.368-2.545 3.168-3.271 5.049-.129.336-.249.675-.36 1.018-.15.461-.284.927-.404 1.396a27.194 27.194 0 0 0-.407 1.87c-.172.942-.3 1.891-.393 2.843l-.088 1.615h-1.702l-.203.066-.149.047c-.397.123-.795.24-1.196.349-.353.096-.707.186-1.064.266-.24.054-.481.104-.723.147-.52.093-1.044.155-1.572.109a3.161 3.161 0 0 1-.77-.155 1.808 1.808 0 0 1-.607-.336.889.889 0 0 1-.191-.219l-.155-.306-2.888.289-.039-1.086a37.85 37.85 0 0 0-.328-2.929 28.94 28.94 0 0 0-.426-2.223 24.042 24.042 0 0 0-.413-1.538 17.933 17.933 0 0 0-.706-1.934c-.796-1.844-1.954-3.591-3.621-4.755a7.603 7.603 0 0 0-.814-.498 7.225 7.225 0 0 0-1.304-.536l-.876-.141z"
         className="sc-body-model-svg__path"
         id="body-model-head"
-        onClick={() => setSiteOfInfection('Back Head')}
+        onClick={() => toggleSiteOfInfection('Back Head')}
+            fill={siteOfInfection.includes("Back Head") ? "#5F8D4E" : undefined}
       ></path>
 
       <path
@@ -57,7 +58,8 @@ const MenBackBodySvgComponent = () => {
     "
         className="sc-body-model-svg__path"
         id="body-model-ears"
-        onClick={() => setSiteOfInfection('Left Ear')}
+        onClick={() => toggleSiteOfInfection('Left Ear')}
+            fill={siteOfInfection.includes("Left Ear") ? "#5F8D4E" : undefined}
       ></path>
 
 
@@ -90,25 +92,29 @@ const MenBackBodySvgComponent = () => {
     "
         className="sc-body-model-svg__path"
         id="body-model-ears"
-        onClick={() => setSiteOfInfection('Right Ear')}
+        onClick={() => toggleSiteOfInfection('Right Ear')}
+            fill={siteOfInfection.includes("Right Ear") ? "#5F8D4E" : undefined}
       ></path>
       <path
         d="M96.76 33.5l-.02.236c-.039.467-.074.935-.107 1.404-.018.265-.036.532-.057.797-.017.191-.037.381-.058.572a12.22 12.22 0 0 1-.249 1.447 5.463 5.463 0 0 1-.325.977 2.209 2.209 0 0 1-.364.582.861.861 0 0 1-.253.2l-.034.014c.046.373.104.745.187 1.111.036.146.077.291.116.437.059.217.116.433.172.651L96 43H75.5l-.014-1.919-.005-.073a1.357 1.357 0 0 1-.191-.125 1.905 1.905 0 0 1-.303-.297 2.705 2.705 0 0 1-.197-.276 4.012 4.012 0 0 1-.37-.776 8.22 8.22 0 0 1-.323-1.143 15.238 15.238 0 0 1-.222-1.377 26.803 26.803 0 0 1-.165-2.386l-.004-.246 8.554-.856c.069.079.141.153.22.221.608.531 1.441.724 2.229.75.184.007.367.004.551-.008.178-.011.356-.031.533-.055.221-.03.44-.068.659-.11.321-.061.64-.132.958-.21a32.947 32.947 0 0 0 1.751-.483l.418-.131h7.181z"
         className="sc-body-model-svg__path"
         id="body-model-neck_or_throat"
-        onClick={() => setSiteOfInfection('Upper Neck')}
+        onClick={() => toggleSiteOfInfection('Upper Neck')}
+            fill={siteOfInfection.includes("Upper Neck") ? "#5F8D4E" : undefined}
       ></path>
       <path
         d="M96 44s1.315.545 1.943.999c.76.55 1.539 1.074 2.328 1.581 1.915 1.229 3.892 2.358 5.895 3.436C107.668 50.822 111 53 111 53H92.5l-.299-.511c-1.165-1.177-2.523-2.227-4.115-2.746a6.687 6.687 0 0 0-1.931-.329c-.13-.001-.13-.001-.26.002a6.535 6.535 0 0 0-1.23.159c-1.141.265-2.189.844-3.089 1.586a10.193 10.193 0 0 0-1.109 1.082L80 53H60.5l11.332-6.496c.134-.063.271-.119.405-.182.712-.339 1.403-.738 2.014-1.239A70.547 70.547 0 0 0 75.5 44H96z"
         className="sc-body-model-svg__path"
         id="body-model-nape_of_neck"
-        onClick={() => setSiteOfInfection('Lower Neck')}
+        onClick={() => toggleSiteOfInfection('Lower Neck')}
+            fill={siteOfInfection.includes("Lower Neck") ? "#5F8D4E" : undefined}
       ></path>
       <path
         d="M80.5 54l.559-.908a8.264 8.264 0 0 1 1.281-1.262 6.959 6.959 0 0 1 1.705-1.011 5.501 5.501 0 0 1 1.35-.362 5.333 5.333 0 0 1 1.656.049c1.431.271 2.699 1.09 3.77 2.047.177.158.348.321.517.487L92 54h21.893l.625-.412c.57.095 1.137.203 1.698.337.615.145 1.222.319 1.822.516l1.259.523-.895 3.724c-.451 2.323-.787 4.667-1.064 7.016-.335 2.839-.58 5.689-.771 8.541-.214 3.19-.36 6.385-.452 9.582l-.09 6.867-.197 1.243a65.684 65.684 0 0 1-1.024 4.77 100.786 100.786 0 0 1-1.071 3.863c-.392 1.308-.798 2.613-1.192 3.921a53.35 53.35 0 0 0-.798 2.913c-.104.438-.193.879-.278 1.322-.091.474-.178.949-.258 1.426a30.12 30.12 0 0 0-.341 2.71 20.75 20.75 0 0 0-.046 2.217l.18.921H60c.039-1.316.076-3.136-.022-4.452-.05-.67-.115-1.339-.193-2.007-.031-.273-.061-.548-.103-.821-.132-.873-.336-1.735-.542-2.593a176.916 176.916 0 0 0-.835-3.28c-.454-1.721-.916-3.442-1.37-5.164l-.931-3.732.008-7.349c-.05-3.854-.161-7.708-.358-11.558a188.114 188.114 0 0 0-.719-9.637c-.27-2.618-.605-5.232-1.09-7.818a54.318 54.318 0 0 0-.479-2.295l-.285-1.107.56-.207L55.5 54h25z"
         className="sc-body-model-svg__path"
         id="body-model-back"
-        onClick={() => setSiteOfInfection('Upper Back')}
+        onClick={() => toggleSiteOfInfection('Upper Back')}
+            fill={siteOfInfection.includes("Upper Back") ? "#5F8D4E" : undefined}
       ></path>
 
       <path
@@ -150,7 +156,8 @@ const MenBackBodySvgComponent = () => {
         `}
         className="sc-body-model-svg__path"
         id="body-model-upper_arm"
-        onClick={() => setSiteOfInfection('Left Upper Arm')}
+        onClick={() => toggleSiteOfInfection('Left Upper Arm')}
+            fill={siteOfInfection.includes("Left Upper Arm") ? "#5F8D4E" : undefined}
       ></path>
 
       <path
@@ -205,7 +212,8 @@ const MenBackBodySvgComponent = () => {
         `}
         className="sc-body-model-svg__path"
         id="body-model-upper_arm"
-        onClick={() => setSiteOfInfection('Right Upper Arm')}
+        onClick={() => toggleSiteOfInfection('Right Upper Arm')}
+            fill={siteOfInfection.includes("Right Upper Arm") ? "#5F8D4E" : undefined}
       ></path>
 
       <path
@@ -243,7 +251,8 @@ const MenBackBodySvgComponent = () => {
           c1.077-1.768 2.299-3.439 3.616-5.036
           z
         `}
-        onClick={() => setSiteOfInfection('Left Elbow')}
+        onClick={() => toggleSiteOfInfection('Left Elbow')}
+            fill={siteOfInfection.includes("Left Elbow") ? "#5F8D4E" : undefined}
         className="sc-body-model-svg__path"
         id="body-model-elbow"
       ></path>
@@ -275,7 +284,8 @@ const MenBackBodySvgComponent = () => {
           a22.66 22.66 0 0 1 3.405-.518
           z
         `}
-        onClick={() => setSiteOfInfection('Right Elbow')}
+        onClick={() => toggleSiteOfInfection('Right Elbow')}
+            fill={siteOfInfection.includes("Right Elbow") ? "#5F8D4E" : undefined}
         className="sc-body-model-svg__path"
         id="body-model-elbow"
       ></path>
@@ -283,7 +293,8 @@ const MenBackBodySvgComponent = () => {
         d="M111.026 117l.219 1.891c.12.695.261 1.385.401 2.076.113.558.224 1.116.334 1.674l.197 1.029c.119.638.236 1.276.341 1.916.064.383.125.768.167 1.154l.006.076a396.211 396.211 0 0 0 .126 3.429c.08 1.765.174 3.528.304 5.288.086 1.164.183 2.328.329 3.487.086.689.19 1.376.297 2.062l.146.903a42.432 42.432 0 0 0-3.031-.538 103.65 103.65 0 0 0-5.827-.668c-2.452-.22-4.91-.381-7.368-.507a243.623 243.623 0 0 0-7.449-.268l-.468-.008c-.182.247-.361.495-.553.734a9.759 9.759 0 0 1-.759.836 6.346 6.346 0 0 1-.271.247c-.54.465-1.194.868-1.921.925a2.264 2.264 0 0 1-.8-.085 2.781 2.781 0 0 1-.721-.334 4.25 4.25 0 0 1-.845-.721 6.527 6.527 0 0 1-.904-1.266c-.058-.11-.113-.222-.169-.332l-.671.001-.363.001c-5.362.04-10.718.405-16.045 1.017-2.912.335-5.818.739-8.71 1.259.396-1.852.587-3.736.762-5.616.128-1.436.246-2.871.373-4.307.171-1.875.363-3.748.634-5.612.081-.566.17-1.131.268-1.695.096-.557.201-1.113.296-1.67a54.645 54.645 0 0 0 .658-5.616L60 117h51.026z"
         className="sc-body-model-svg__path"
         id="body-model-lower_back"
-        onClick={() => setSiteOfInfection('Lower Back')}
+        onClick={() => toggleSiteOfInfection('Lower Back')}
+            fill={siteOfInfection.includes("Lower Back") ? "#5F8D4E" : undefined}
       ></path>
 
             <path
@@ -321,7 +332,8 @@ const MenBackBodySvgComponent = () => {
         `}
         className="sc-body-model-svg__path"
         id="body-model-forearm"
-         onClick={() => setSiteOfInfection('Left Forearm')}
+         onClick={() => toggleSiteOfInfection('Left Forearm')}
+            fill={siteOfInfection.includes("Left Forearm") ? "#5F8D4E" : undefined}
       ></path>
 
       <path
@@ -355,19 +367,22 @@ const MenBackBodySvgComponent = () => {
         `}
         className="sc-body-model-svg__path"
         id="body-model-forearm"
-         onClick={() => setSiteOfInfection('Right Forearm')}
+         onClick={() => toggleSiteOfInfection('Right Forearm')}
+            fill={siteOfInfection.includes("Right Forearm") ? "#5F8D4E" : undefined}
       ></path>
       <path
         d="M52.533 164.288l.536-2.874c.124-.58.254-1.158.388-1.736.103-.437.209-.874.309-1.311.078-.344.155-.689.229-1.033.238-1.11.456-2.224.665-3.339.311-1.668.603-3.339.911-5.007a99.04 99.04 0 0 1 .771-3.815l.453-1.846 1.958-.349a170.9 170.9 0 0 1 7.089-.966c3.188-.366 6.386-.644 9.59-.816a130.75 130.75 0 0 1 6.773-.196l.002.005a8.118 8.118 0 0 0 .668.96c.672.821 1.561 1.536 2.63 1.728.178.032.358.05.538.051.29.003.579-.034.859-.106a4.148 4.148 0 0 0 1.098-.469c.823-.493 1.49-1.201 2.082-1.947.084-.108.084-.107.167-.217 2.457.05 4.913.14 7.367.265 2.446.126 4.89.286 7.33.505 1.845.165 3.689.363 5.523.625 1.201.172 2.4.369 3.597.652l.068.417c.389 2.346.801 4.687 1.215 7.027.756 4.258 1.523 8.515 2.279 12.772l.121.706-1.551 2.939a17.471 17.471 0 0 1-2.288 2.841 17.094 17.094 0 0 1-2.042 1.748 17.8 17.8 0 0 1-1.702 1.097c-.431.245-.872.472-1.321.682-2.976 1.391-6.259 2.013-9.524 2.175-.607.03-1.214.044-1.821.044-.783 0-1.567-.033-2.347-.11a18.363 18.363 0 0 1-1.808-.267 14.585 14.585 0 0 1-1.542-.396l-.147-.057c.548-1.152.816-2.43.842-3.71.031-1.529-.28-3.071-.954-4.447-.682-1.391-1.748-2.621-3.13-3.346a5.756 5.756 0 0 0-2.841-.664 5.785 5.785 0 0 0-2.487.664c-1.382.725-2.448 1.956-3.13 3.346-.659 1.344-.971 2.848-.955 4.342a9.697 9.697 0 0 0 .91 4.036l-.716.34c-1.353.558-2.787.901-4.237 1.088a22.967 22.967 0 0 1-4.374.133 20.045 20.045 0 0 1-3.232-.485 20 20 0 0 1-3.649-1.243 21.732 21.732 0 0 1-3.453-1.967c-1.955-1.36-3.696-3.017-5.21-4.853a29.127 29.127 0 0 1-1.65-2.208l-.857-1.408z"
         className="sc-body-model-svg__path"
         id="body-model-buttocks"
-        onClick={() => setSiteOfInfection('Buttocks')}
+        onClick={() => toggleSiteOfInfection('Buttocks')}
+            fill={siteOfInfection.includes("Buttocks") ? "#5F8D4E" : undefined}
       ></path>
       <path
         d="M84.725 177.882l-.653-.197c-1.39-.537-2.468-1.683-3.143-2.989-.642-1.241-.943-2.647-.928-4.041.014-1.386.341-2.777 1.006-3.998.666-1.222 1.692-2.289 2.999-2.816.198-.079.401-.146.608-.199a4.762 4.762 0 0 1 1.354-.137c.334.019.664.068.987.155.206.056.408.126.605.209 1.276.535 2.278 1.587 2.933 2.788.65 1.193.977 2.549 1.005 3.903.029 1.398-.259 2.81-.889 4.062-.61 1.211-1.558 2.289-2.788 2.891a4.769 4.769 0 0 1-1.213.406l-.217.019.007-.387.005-.051c-.097-2.544-.204-5.089-.317-7.632a16.563 16.563 0 0 1-.201-.848 5.04 5.04 0 0 1-.028.131l-.026.113c-.006.293-.007.311-.017.637a44.287 44.287 0 0 1-.172 2.601 39.213 39.213 0 0 1-.822 5.027l-.095.353z"
         className="sc-body-model-svg__path"
         id="body-model-anus"
-        onClick={() => setSiteOfInfection('Anus')}
+        onClick={() => toggleSiteOfInfection('Anus')}
+            fill={siteOfInfection.includes("Anus") ? "#5F8D4E" : undefined}
       ></path>
 
       <path
@@ -486,7 +501,8 @@ const MenBackBodySvgComponent = () => {
           l.398-3.335z"
         className="sc-body-model-svg__path"
         id="body-model-hand"
-        onClick={() => setSiteOfInfection('Left Hand')}
+        onClick={() => toggleSiteOfInfection('Left Hand')}
+            fill={siteOfInfection.includes("Left Hand") ? "#5F8D4E" : undefined}
       ></path>
 
 
@@ -494,7 +510,8 @@ const MenBackBodySvgComponent = () => {
   d="M154.137 147.795l.029.073c.113.305.224.611.335.918.361 1.008.712 2.019 1.073 3.027.069.191.137.382.211.571.04.105.079.21.128.311.143.292.331.563.551.802.14.152.292.29.449.424.158.129.322.252.482.38.541.443 1.062.91 1.582 1.377a98.368 98.368 0 0 1 1.939 1.774l.081.077.019.025c.054.055.107.11.162.164.206.202.414.403.617.608.323.327.636.663.903 1.038.186.26.351.541.459.843.046.131.082.266.104.403.012.081.016.164.03.246.009.046.021.092.033.138.067.233.16.459.262.68.101.22.212.436.328.648.317.584.669 1.149 1.037 1.702l.056.083c.08.091.159.183.235.276.056.071.111.142.164.214a4.682 4.682 0 0 1 .33.516c.032.057.06.116.087.175.16.354.254.782.096 1.154a.877.877 0 0 1-.276.372.888.888 0 0 1-.163.097 2.534 2.534 0 0 1-.83.238 2.556 2.556 0 0 1-.799-.044 3.45 3.45 0 0 1-1.211-.545c-.514-.351-.956-.801-1.346-1.285a7.565 7.565 0 0 1-.594-.839l-.151-.169.313 1.478c.123.522.26 1.042.39 1.564l.191.806c.181.787.353 1.574.513 2.365a86.453 86.453 0 0 1 .754 4.348 33.325 33.325 0 0 1 .175 1.377c.017.163.033.325.044.488.009.117.013.233.011.35 0 .084-.004.168-.01.253-.043.533-.223 1.102-.662 1.441-.057.044-.12.082-.185.116l-.02.009c-.025.008-.047.019-.072.026a1.32 1.32 0 0 1-.536-.004c-.497-.111-.88-.491-1.168-.891a5.322 5.322 0 0 1-.437-.731 8.646 8.646 0 0 1-.258-.552 13.134 13.134 0 0 1-.293-.742 20.106 20.106 0 0 1-.31-.926l-.019-.059c.102 1.055.205 2.111.327 3.163.063.546.138 1.09.205 1.634l.046.448c.017.222.032.444.038.667a7.376 7.376 0 0 1-.04 1.068 5.552 5.552 0 0 1-.053.339 3.712 3.712 0 0 1-.069.295c-.122.441-.349.916-.78 1.127l-.027.012c-.037.01-.072.024-.109.031-.095.016-.198.003-.293-.007a2.424 2.424 0 0 1-.96-.311c-.699-.406-1.143-1.151-1.324-1.923-.025-.123-.039-.249-.057-.373a136.58 136.58 0 0 0-.185-1.199c-.343-2.113-.738-4.221-1.323-6.282l-.027-.091.26 7.879-.005-.02a8.4 8.4 0 0 1 .187 1.129c.035.381.044.773-.021 1.152a1.887 1.887 0 0 1-.297.774 1.188 1.188 0 0 1-.491.408c-.116.051-.24.083-.363.111-.431.096-.89.075-1.282-.146-.374-.209-.635-.564-.814-.946-.27-.572-.378-1.2-.471-1.821a73.294 73.294 0 0 1-.23-1.74 321.062 321.062 0 0 1-.685-6.193l-.045-.44a50.106 50.106 0 0 0-.387 2.031c-.124.716-.24 1.435-.319 2.157-.026.236-.039.473-.057.711-.012.141-.012.14-.028.281a8.74 8.74 0 0 1-.44 1.951c-.06.164-.13.324-.21.478-.095.18-.207.354-.349.5a1.215 1.215 0 0 1-.301.233c-.326.173-.727.144-1.058.005a1.82 1.82 0 0 1-.519-.333 2.133 2.133 0 0 1-.648-1.087c-.078-.337-.037-.684-.008-1.024.042-.491.096-.981.151-1.47.15-1.315.317-2.629.514-3.937.034-.222.068-.444.104-.665.039-.235.082-.47.119-.705l.039-.288c.036-.329.064-.66.04-.991a1.929 1.929 0 0 0-.032-.252.585.585 0 0 0-.038-.136l.011.018-.053-.108c-.042-.122-.081-.244-.121-.367a25.7 25.7 0 0 1-.69-2.965 58.57 58.57 0 0 1-.463-3.062 112.91 112.91 0 0 1-.687-7.573 109.98 109.98 0 0 1-.1-1.986c-.016-.387-.024-.774-.045-1.16a13.042 13.042 0 0 0-.029-.394l-.219-1.256 1.294-.244c2.889-.675 5.596-2.012 7.974-3.775l.61-.52z"
   className="sc-body-model-svg__path"
   id="body-model-hand"
-  onClick={() => setSiteOfInfection('Right Hand')}
+  onClick={() => toggleSiteOfInfection('Right Hand')}
+            fill={siteOfInfection.includes("Right Hand") ? "#5F8D4E" : undefined}
 ></path>
 
       <path
@@ -548,7 +565,8 @@ const MenBackBodySvgComponent = () => {
         `}
         className="sc-body-model-svg__path"
         id="body-model-thigh"
-        onClick={() => setSiteOfInfection('Right Thigh')}
+        onClick={() => toggleSiteOfInfection('Right Thigh')}
+            fill={siteOfInfection.includes("Right Thigh") ? "#5F8D4E" : undefined}
       ></path>
 
 
@@ -613,7 +631,8 @@ const MenBackBodySvgComponent = () => {
         `}
         className="sc-body-model-svg__path"
         id="body-model-thigh"
-        onClick={() => setSiteOfInfection('Left Thigh')}
+        onClick={() => toggleSiteOfInfection('Left Thigh')}
+            fill={siteOfInfection.includes("Left Thigh") ? "#5F8D4E" : undefined}
       ></path>
 
       <path
@@ -667,7 +686,8 @@ const MenBackBodySvgComponent = () => {
         `}
         className="sc-body-model-svg__path"
         id="body-model-lower_leg"
-        onClick={() => setSiteOfInfection('Left Lower Leg')}
+        onClick={() => toggleSiteOfInfection('Left Lower Leg')}
+            fill={siteOfInfection.includes("Left Lower Leg") ? "#5F8D4E" : undefined}
       ></path>
 
       <path
@@ -722,7 +742,8 @@ const MenBackBodySvgComponent = () => {
         `}
         className="sc-body-model-svg__path"
         id="body-model-lower_leg"
-        onClick={() => setSiteOfInfection('Right Lower Leg')}
+        onClick={() => toggleSiteOfInfection('Right Lower Leg')}
+            fill={siteOfInfection.includes("Right Lower Leg") ? "#5F8D4E" : undefined}
       ></path>
 
       <path
@@ -778,7 +799,8 @@ const MenBackBodySvgComponent = () => {
         `}
         className="sc-body-model-svg__path"
         id="body-model-foot"
-        onClick={() => setSiteOfInfection('Left Foot')}
+        onClick={() => toggleSiteOfInfection('Left Foot')}
+            fill={siteOfInfection.includes("Left Foot") ? "#5F8D4E" : undefined}
       ></path>
 
       <path
@@ -837,7 +859,8 @@ const MenBackBodySvgComponent = () => {
 
         className="sc-body-model-svg__path"
         id="body-model-foot"
-        onClick={() => setSiteOfInfection('Right Foot')}
+        onClick={() => toggleSiteOfInfection('Right Foot')}
+            fill={siteOfInfection.includes("Right Foot") ? "#5F8D4E" : undefined}
       ></path>
       <g>
         <path

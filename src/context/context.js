@@ -11,6 +11,7 @@ export function ContextProvider({ children }) {
   const [gender, setGender] = useState('')
   const [duration, setDuration] = useState('')
   const [previousTreatment, setPreviousTreatment] = useState('')
+  const [clinicalImpression, setClinicalImpression] = useState('')
 
   // For Step 2 - Image Uploads
   const [nakedEyePhoto, setNakedEyePhoto] = useState(null)
@@ -19,7 +20,13 @@ export function ContextProvider({ children }) {
   const [dermoscopePreviews, setDermoscopePreviews] = useState([]) // array for multiple previews
 
   // For Step 3
-  const [siteOfInfection, setSiteOfInfection] = useState('')
+  const [siteOfInfection, setSiteOfInfection] = useState([])
+
+  const toggleSiteOfInfection = (site) => {
+    setSiteOfInfection(prev =>
+      prev.includes(site) ? prev.filter(s => s !== site) : [...prev, site]
+    );
+  }
 
   // For Step 4
   const [patientId, setPatientId] = useState(null)
@@ -44,6 +51,8 @@ export function ContextProvider({ children }) {
       setDuration,
       previousTreatment,
       setPreviousTreatment,
+      clinicalImpression,
+      setClinicalImpression,
 
       // Step 2 - images
       nakedEyePhoto,
@@ -58,6 +67,7 @@ export function ContextProvider({ children }) {
       // Step 3
       siteOfInfection,
       setSiteOfInfection,
+      toggleSiteOfInfection,
 
     }}>
       {children}

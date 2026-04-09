@@ -243,7 +243,7 @@ export default function Report() {
         new Paragraph({
           children: [
             new TextRun({ text: 'Clinical Impression: ', bold: true, size: 22, color: "000000" }),
-            new TextRun({ text: report.clinicalImpression, size: 22, color: "000000" })
+            new TextRun({ text: patient.clinicalImpression || 'N/A', size: 22, color: "000000" })
           ],
           spacing: { after: 400 }
         })
@@ -263,13 +263,6 @@ export default function Report() {
                   }),
                   new Paragraph({
                     children: [new TextRun({ text: report.dermoscopeFindings, size: 22, color: "000000" })],
-                    spacing: { after: 200 }
-                  }),
-                  new Paragraph({
-                    children: [
-                      new TextRun({ text: 'Impression: ', bold: true, size: 22, color: "000000" }),
-                      new TextRun({ text: report.clinicalImpression, size: 22, color: "000000" })
-                    ]
                   })
                 ],
                 borders: { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder }
@@ -280,6 +273,32 @@ export default function Report() {
       });
 
       children.push(dermoscopicTable);
+      children.push(new Paragraph({ text: '', spacing: { after: 200 } }));
+
+      // Final Impression - separate bordered box
+      const finalImpressionTable = new Table({
+        columnWidths: [10000],
+        rows: [
+          new TableRow({
+            children: [
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [new TextRun({ text: 'Final Impression:', bold: true, size: 24, color: "000000" })],
+                    spacing: { after: 200 }
+                  }),
+                  new Paragraph({
+                    children: [new TextRun({ text: report.clinicalImpression, size: 22, color: "000000" })],
+                  })
+                ],
+                borders: { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder }
+              })
+            ]
+          })
+        ]
+      });
+
+      children.push(finalImpressionTable);
       children.push(new Paragraph({ text: '', spacing: { after: 400 } }));
 
       // Medical Images Section
@@ -808,7 +827,7 @@ export default function Report() {
             <strong>Duration of Symptoms:</strong> {patient.duration}
           </p>
           <p className="break-words">
-            <strong>Clinical Impression:</strong> {report.clinicalImpression}
+            <strong>Clinical Impression:</strong> {patient.clinicalImpression || 'N/A'}
           </p>
         </div>
 
@@ -818,9 +837,14 @@ export default function Report() {
             Dermoscopic findings:
           </p>
           <p className="break-words leading-relaxed text-xs sm:text-sm">{report.dermoscopeFindings}</p>
-          <p className="break-words text-xs sm:text-sm">
-            <strong>Impression:</strong> {report.clinicalImpression}
+        </div>
+
+        {/* Final Impression - Separate section */}
+        <div className="border border-black p-3 sm:p-4 space-y-2 font-poppins">
+          <p className="font-semibold text-base sm:text-lg md:text-xl font-poppins mb-2">
+            Final Impression:
           </p>
+          <p className="break-words leading-relaxed text-xs sm:text-sm">{report.clinicalImpression}</p>
         </div>
 
         {/* Photo Gallery Section */}

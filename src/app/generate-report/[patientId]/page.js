@@ -347,6 +347,7 @@ export default function AdminGenerate() {
               <div><strong>Site of Lesion:</strong> {patient.siteOfInfection}</div>
               <div><strong>Duration:</strong> {patient.duration}</div>
               <div className="sm:col-span-2"><strong>Previous Treatment:</strong> {patient.previousTreatment || 'None'}</div>
+              <div className="sm:col-span-2"><strong>Clinical Impression:</strong> {patient.clinicalImpression || 'None'}</div>
               <div className="sm:col-span-2"><strong>Images:</strong> 1 Macroscopic, {patient.dermoscopePhotos.length} Dermoscopic</div>
             </div>
           </div>
@@ -360,7 +361,7 @@ export default function AdminGenerate() {
             <div className="space-y-6">
               <div className="space-y-2">
                 <label className="block font-medium text-black text-sm sm:text-base" htmlFor="clinicalImpression">
-                  Clinical Impression *
+                  Final Impression *
                 </label>
                 <Input
                   id="clinicalImpression"
@@ -390,18 +391,18 @@ export default function AdminGenerate() {
               <h4 className="font-semibold text-sm mb-2 text-black">Progress:</h4>
               <div className="space-y-1 text-sm">
                 <div className={`flex items-center gap-2 ${nakedEyeSaved ? 'text-green-600' : 'text-gray-500'}`}>
-                  {nakedEyeSaved ? '&#10003;' : '○'} Macroscopic image edited and saved
+                  {nakedEyeSaved ? '✓' : '○'} Macroscopic image edited and saved
                 </div>
                 {patient.dermoscopePhotos.map((_, index) => (
                   <div key={index} className={`flex items-center gap-2 ${dermoscopeSavedStates[index] ? 'text-green-600' : 'text-gray-500'}`}>
-                    {dermoscopeSavedStates[index] ? '&#10003;' : '○'} Dermoscopic image {patient.dermoscopePhotos.length > 1 ? `${index + 1} ` : ''}edited and saved
+                    {dermoscopeSavedStates[index] ? '✓' : '○'} Dermoscopic image {patient.dermoscopePhotos.length > 1 ? `${index + 1} ` : ''}edited and saved
                   </div>
                 ))}
                 <div className={`flex items-center gap-2 ${dermoscopeFindings.trim() ? 'text-green-600' : 'text-gray-500'}`}>
-                  {dermoscopeFindings.trim() ? '&#10003;' : '○'} Dermoscopic findings entered
+                  {dermoscopeFindings.trim() ? '✓' : '○'} Dermoscopic findings entered
                 </div>
                 <div className={`flex items-center gap-2 ${clinicalImpression.trim() ? 'text-green-600' : 'text-gray-500'}`}>
-                  {clinicalImpression.trim() ? '&#10003;' : '○'} Clinical impression entered
+                  {clinicalImpression.trim() ? '✓' : '○'} Clinical impression entered
                 </div>
               </div>
             </div>

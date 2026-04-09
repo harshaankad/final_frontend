@@ -20,6 +20,8 @@ export default function Step1() {
     setDuration,
     previousTreatment,
     setPreviousTreatment,
+    clinicalImpression,
+    setClinicalImpression,
   } = useForm();
 
   const handleChange = (e) => {
@@ -48,6 +50,9 @@ export default function Step1() {
       case "previousTreatment":
         setPreviousTreatment(value);
         break;
+      case "clinicalImpression":
+        setClinicalImpression(value);
+        break;
       default:
         break;
     }
@@ -59,7 +64,8 @@ export default function Step1() {
            age !== '' &&
            gender !== '' &&
            duration.trim() !== '' &&
-           previousTreatment.trim() !== '';
+           previousTreatment.trim() !== '' &&
+           clinicalImpression.trim() !== '';
   };
 
   return (
@@ -224,6 +230,26 @@ export default function Step1() {
               required
             />
           </div>
+        </div>
+
+        {/* Clinical Impression */}
+        <div className="w-full flex flex-col">
+          <label
+            htmlFor="clinicalImpression"
+            className="text-sm sm:text-base font-poppins font-semibold text-black mb-1 sm:mb-2"
+          >
+            Clinical Impression *
+          </label>
+          <textarea
+            id="clinicalImpression"
+            name="clinicalImpression"
+            placeholder="Enter clinical impression"
+            value={clinicalImpression}
+            onChange={handleChange}
+            rows={3}
+            className="border border-gray-400 rounded px-3 sm:px-4 py-2 sm:py-3 font-poppins text-sm sm:text-base focus:border-[#5F8D4E] focus:outline-none focus:ring-2 focus:ring-[#5F8D4E]/20 transition-all duration-200 resize-none"
+            required
+          />
         </div>
 
         {/* Validation Message - only after user tries to proceed */}

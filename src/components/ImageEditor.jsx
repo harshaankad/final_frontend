@@ -62,11 +62,11 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
   }, [imageLoaded, imageDimensions]);
 
   const drawArrow = (ctx, fromX, fromY, toX, toY, color) => {
-    const headLength = 15;
+    const headLength = 35;
     const angle = Math.atan2(toY - fromY, toX - fromX);
 
     ctx.strokeStyle = color;
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 12;
 
     ctx.beginPath();
     ctx.moveTo(fromX, fromY);
@@ -97,7 +97,7 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
     shapes.forEach((shape) => {
       if (shape.type === 'circle') {
         ctx.strokeStyle = shape.color;
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 12;
         ctx.beginPath();
         ctx.arc(shape.cx, shape.cy, shape.r, 0, 2 * Math.PI);
         ctx.stroke();
@@ -142,7 +142,7 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
     drawAll(ctx);
 
     ctx.strokeStyle = color;
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 12;
 
     if (selectedTool === 'circle') {
       const radius =
