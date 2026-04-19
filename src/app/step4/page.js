@@ -105,7 +105,7 @@ export default function Step4() {
         key: 'rzp_live_SUL8Trxygv1AJ0',
         amount: orderData.amount,
         currency: orderData.currency,
-        name: 'DermDrishti',
+        name: 'DermaDrishti',
         description: 'Patient Consultation Fee',
         order_id: orderData.orderId,
         prefill: { name, email },

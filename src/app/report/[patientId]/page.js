@@ -148,7 +148,7 @@ export default function Report() {
       // Header - matches UI exactly
       children.push(
         new Paragraph({
-          children: [new TextRun({ text: 'DermDrishti', bold: true, size: 36, color: "000000" })],
+          children: [new TextRun({ text: 'DermaDrishti', bold: true, size: 36, color: "000000" })],
           alignment: AlignmentType.CENTER,
           spacing: { after: 100, before: 200 }
         }),
@@ -795,7 +795,7 @@ export default function Report() {
         {/* Header */}
         <div className="text-center space-y-2">
           <h2 className="text-lg sm:text-xl md:text-2xl font-poppins font-bold">
-            DermDrishti
+            DermaDrishti
           </h2>
           <h3 className="text-sm sm:text-base font-semibold font-poppins">Dermoscopy Reporting Services</h3>
           <p className="text-xs sm:text-sm font-medium font-poppins italic">By</p>
