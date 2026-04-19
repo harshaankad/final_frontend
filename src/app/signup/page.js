@@ -49,7 +49,7 @@ export default function Signup() {
       {/* Main Content */}
       <div className={`bg-white w-full min-h-screen flex flex-col justify-center items-center py-8 px-4 sm:py-16 transition-all duration-300 ${loading ? 'blur-sm' : ''}`}>
         <h1 className="text-2xl sm:text-3xl font-semibold text-center text-black">
-          <span className="text-brandGreen">Derm</span>Drishti
+          <span className="text-brandGreen">Derma</span>Drishti
         </h1>
 
         <span className="text-center text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-medium font-poppins text-black my-4 sm:my-8">

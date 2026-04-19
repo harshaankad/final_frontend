@@ -68,7 +68,7 @@ export default function Login() {
       <div className={`bg-white w-full min-h-screen flex flex-col justify-center items-center px-4 py-8 sm:py-16 transition-all duration-300 ${loading ? 'blur-sm' : ''}`}>
         {/* HEADING */}
         <h1 className="text-2xl sm:text-3xl font-semibold text-center text-black">
-          <span className="text-brandGreen">Derm</span>Drishti
+          <span className="text-brandGreen">Derma</span>Drishti
         </h1>
 
         {/* WELCOME BACK TEXT */}
