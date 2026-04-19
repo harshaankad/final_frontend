@@ -145,10 +145,10 @@ export default function Step2() {
             </div>
             <div className="flex flex-col justify-start w-full">
               <label className="text-black font-semibold text-base sm:text-lg font-poppins mb-2">
-                Clinical Eye Photo *
+                Clinical Photo *
               </label>
               <span className="text-gray-600 text-sm sm:text-base font-normal italic mb-2">
-                Please upload a clear Clinical eye photo of the affected area
+                Please upload a clear Clinical photo of the affected area
               </span>
               <span className="text-gray-500 text-xs sm:text-sm font-normal mb-3">
                 Max file size: {MAX_FILE_SIZE_MB}MB

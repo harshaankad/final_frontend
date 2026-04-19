@@ -685,7 +685,7 @@ export default function PatientsPage() {
               </li>
               <li style={{ display: "flex", gap: "10px", marginBottom: "0", alignItems: "flex-start" }}>
                 <span style={{ color: "#5F8D4E", fontSize: "16px", lineHeight: "1.3", flexShrink: 0 }}>&#x2022;</span>
-                <span>Reports will be delivered within <strong>0–72 hours</strong> from the time of submission.</span>
+                <span>Reports will be delivered within <strong>24–72 hours</strong> from the time of submission.</span>
               </li>
             </ul>
 
