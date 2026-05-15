@@ -411,6 +411,102 @@ export default function Report() {
         }
       }
 
+      // Signature
+      try {
+        const signatureData = await getBase64Image('/signature.png');
+        if (signatureData) {
+          const sigDims = getScaledDimensions(signatureData.width, signatureData.height, 180);
+          children.push(
+            new Paragraph({
+              children: [
+                new ImageRun({
+                  data: signatureData.data,
+                  transformation: { width: sigDims.width, height: sigDims.height }
+                })
+              ],
+              alignment: AlignmentType.RIGHT,
+              spacing: { before: 300, after: 80 }
+            })
+          );
+        }
+      } catch (e) {
+        // signature missing — skip
+      }
+
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: 'Professor Balachandra S Ankad', bold: true, size: 22, color: "000000" })],
+          alignment: AlignmentType.RIGHT,
+          spacing: { after: 40 }
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: 'Dermatologist and Dermatoscopist', italics: true, size: 20, color: "000000" })],
+          alignment: AlignmentType.RIGHT,
+          spacing: { after: 400 }
+        })
+      );
+
+      // Disclaimer Notes - bordered table with bulleted list
+      const disclaimerParagraphs = [
+        new Paragraph({
+          children: [new TextRun({ text: 'Disclaimer Notes', bold: true, size: 26, color: "000000" })],
+          spacing: { after: 200 }
+        }),
+        new Paragraph({
+          children: [new TextRun({
+            text: '1. Dermoscopy is an evolving science in the field of dermatology. Only a limited number of dermatological conditions currently have well-established dermoscopic criteria supported by histopathological correlation. For many dermatoses, standardized diagnostic criteria are yet to be fully established. Therefore, the diagnostic impressions provided by DermaDrishti Dermoscopy Reporting Services are based solely on the available published dermoscopy literature.',
+            size: 20, color: "000000"
+          })],
+          spacing: { after: 160 }
+        }),
+        new Paragraph({
+          children: [new TextRun({
+            text: '2. DermaDrishti Dermoscopy Reporting Services strongly recommends that dermatologists correlate dermoscopic impressions with histopathological findings whenever necessary to confirm the diagnosis.',
+            size: 20, color: "000000"
+          })],
+          spacing: { after: 160 }
+        }),
+        new Paragraph({
+          children: [new TextRun({
+            text: '3. DermaDrishti Dermoscopy Reporting Services advises against initiating immunosuppressive agents or biologic therapies solely on the basis of dermoscopic impressions. Confirmation of diagnosis through appropriate clinicopathological correlation is recommended before commencing such treatments.',
+            size: 20, color: "000000"
+          })],
+          spacing: { after: 160 }
+        }),
+        new Paragraph({
+          children: [new TextRun({
+            text: '4. DermaDrishti Dermoscopy Reporting Services shall not be held responsible for any inappropriate or incorrect treatment decisions made solely on the basis of the dermoscopic impressions provided.',
+            size: 20, color: "000000"
+          })],
+          spacing: { after: 160 }
+        }),
+        new Paragraph({
+          children: [
+            new TextRun({
+              text: '5. Clinical and dermoscopic images (“the data”) submitted to DermaDrishti Dermoscopy Reporting Services will be securely stored for a period of 3 months from the date of submission. Dermatologists may request retrieval of the data within this period by contacting: ',
+              size: 20, color: "000000"
+            }),
+            new TextRun({ text: 'drbsankad@gmail.com', size: 20, color: "000000", bold: true })
+          ]
+        })
+      ];
+
+      const disclaimerTable = new Table({
+        columnWidths: [10000],
+        rows: [
+          new TableRow({
+            children: [
+              new TableCell({
+                children: disclaimerParagraphs,
+                borders: { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder }
+              })
+            ]
+          })
+        ]
+      });
+
+      children.push(disclaimerTable);
+
       // Create document
       const doc = new Document({
         sections: [{
@@ -849,6 +945,35 @@ export default function Report() {
 
         {/* Photo Gallery Section */}
         {renderPhotoGallery()}
+
+        {/* Signature */}
+        <div className="px-3 sm:px-4 flex flex-col items-end mt-6 font-poppins">
+          <img src="/signature.png" alt="Signature" className="h-20 sm:h-24 object-contain mb-1" />
+          <p className="text-xs sm:text-sm font-semibold">Professor Balachandra S Ankad</p>
+          <p className="text-xs sm:text-sm italic text-gray-600">Dermatologist and Dermatoscopist</p>
+        </div>
+
+        {/* Disclaimer Notes */}
+        <div className="border border-black p-3 sm:p-4 mt-6 font-poppins">
+          <p className="font-semibold text-base sm:text-lg md:text-xl mb-3">Disclaimer Notes</p>
+          <ol className="list-decimal pl-5 sm:pl-6 space-y-3 text-xs sm:text-sm leading-relaxed text-justify">
+            <li>
+              Dermoscopy is an evolving science in the field of dermatology. Only a limited number of dermatological conditions currently have well-established dermoscopic criteria supported by histopathological correlation. For many dermatoses, standardized diagnostic criteria are yet to be fully established. Therefore, the diagnostic impressions provided by DermaDrishti Dermoscopy Reporting Services are based solely on the available published dermoscopy literature.
+            </li>
+            <li>
+              DermaDrishti Dermoscopy Reporting Services strongly recommends that dermatologists correlate dermoscopic impressions with histopathological findings whenever necessary to confirm the diagnosis.
+            </li>
+            <li>
+              DermaDrishti Dermoscopy Reporting Services advises against initiating immunosuppressive agents or biologic therapies solely on the basis of dermoscopic impressions. Confirmation of diagnosis through appropriate clinicopathological correlation is recommended before commencing such treatments.
+            </li>
+            <li>
+              DermaDrishti Dermoscopy Reporting Services shall not be held responsible for any inappropriate or incorrect treatment decisions made solely on the basis of the dermoscopic impressions provided.
+            </li>
+            <li>
+              Clinical and dermoscopic images (&ldquo;the data&rdquo;) submitted to DermaDrishti Dermoscopy Reporting Services will be securely stored for a period of 3 months from the date of submission. Dermatologists may request retrieval of the data within this period by contacting: <span className="font-medium">drbsankad@gmail.com</span>
+            </li>
+          </ol>
+        </div>
       </div>
 
       {/* Add custom CSS for animations */}
