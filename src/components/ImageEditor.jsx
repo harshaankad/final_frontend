@@ -190,11 +190,13 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Export as JPEG, not PNG. PNG is lossless so a full-resolution photo
+    // becomes 20-30 MB; JPEG at 0.9 quality is ~5-10x smaller and looks the same.
     canvas.toBlob((blob) => {
       if (blob) {
         const timestamp = Date.now();
-        const file = new File([blob], `edited_image_${timestamp}.png`, {
-          type: 'image/png',
+        const file = new File([blob], `edited_image_${timestamp}.jpg`, {
+          type: 'image/jpeg',
           lastModified: timestamp,
         });
 
@@ -203,7 +205,7 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
           onEditComplete(file);
         }
       }
-    }, 'image/png', 0.9);
+    }, 'image/jpeg', 0.9);
   };
 
   if (!imageUrl) {
