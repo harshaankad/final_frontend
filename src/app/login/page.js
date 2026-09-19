@@ -2,13 +2,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useForm } from '../../context/context';
 import Spinner from "@/components/Spinner";
 import { API_BASE } from "@/lib/config";
+import { setMfaToken, clearSession } from "@/lib/auth";
 
 export default function Login() {
   const router = useRouter();
-  const { setDoctorId } = useForm();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -43,18 +42,11 @@ export default function Login() {
         return;
       }
 
-      localStorage.setItem("authToken", data.token);
-      localStorage.setItem("doctorData", JSON.stringify(data.doctor));
-
-      if (data.doctor && data.doctor._id) {
-        setDoctorId(data.doctor._id);
-        localStorage.setItem("doctorId", data.doctor._id);
-      } else if (data.doctor && data.doctor.id) {
-        setDoctorId(data.doctor.id);
-        localStorage.setItem("doctorId", data.doctor.id);
-      }
-
-      router.push("/patients");
+      // Password is only step 1: the server hands back a short-lived MFA
+      // token and the session is issued after the authenticator code.
+      clearSession();
+      setMfaToken(data.mfaToken);
+      router.push(data.mfaSetupRequired ? "/mfa/setup" : "/mfa");
     } catch (err) {
       setError("Something went wrong. Please try again.");
       console.error("Login error:", err);
@@ -125,8 +117,14 @@ export default function Login() {
             />
           </div>
 
+          <div className="flex justify-end -mt-2">
+            <Link href="/forgot-password" className="link-brand text-sm">
+              Forgot password?
+            </Link>
+          </div>
+
           {/* SUBMIT BUTTON */}
-          <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
+          <button type="submit" disabled={loading} className="btn-primary w-full">
             Login
           </button>
         </form>

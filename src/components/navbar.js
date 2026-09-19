@@ -9,6 +9,7 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { logout } from '@/lib/auth';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -36,13 +37,9 @@ export default function Navbar() {
 
   const links = isAdmin ? [...navigation, ...adminNavigation] : navigation;
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('doctorData');
-    localStorage.removeItem('doctorId');
+  // Revokes the token on the server (all devices), then clears local state.
+  const handleLogout = async () => {
+    await logout();
     setIsLoggedIn(false);
     setIsAdmin(false);
     router.push('/');

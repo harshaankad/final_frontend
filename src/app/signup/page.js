@@ -6,6 +6,9 @@ import { useState } from 'react';
 import axios from 'axios';
 import Spinner from '@/components/Spinner'; // <-- make sure path is correct
 import { API_BASE } from "@/lib/config";
+import { setSignupDraft } from "@/lib/signupDraft";
+
+const PASSWORD_MIN = 10;
 
 export default function Signup() {
   const router = useRouter();
@@ -36,7 +39,8 @@ export default function Signup() {
         email: formData.email,
       });
 
-      sessionStorage.setItem('signupData', JSON.stringify(formData));
+      // Kept in memory only (it includes the password), never in web storage.
+      setSignupDraft(formData);
       router.push(`/verification-code`);
     } catch (error) {
       alert(error.response?.data?.error || 'Failed to send OTP');
@@ -163,9 +167,12 @@ export default function Signup() {
                 onChange={handleChange}
                 placeholder="Password"
                 required
+                minLength={PASSWORD_MIN}
+                autoComplete="new-password"
                 disabled={loading}
                 className="field-input"
               />
+              <span className="text-xs text-gray-500 mt-1">At least {PASSWORD_MIN} characters.</span>
             </div>
           </div>
 

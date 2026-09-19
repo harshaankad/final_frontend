@@ -9,7 +9,7 @@ import { API_BASE, RAZORPAY_KEY_ID } from "@/lib/config";
 
 export default function Step4() {
   const router = useRouter();
-  const { patientId, doctorId, firstName, lastName } = useForm();
+  const { patientId, firstName, lastName } = useForm();
 
   const [payData, setPayData] = useState({
     name: '',
@@ -82,11 +82,8 @@ export default function Step4() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          doctorId: doctorId,
-          patientId: patientId,
-          amount: 299,
-        }),
+        // The fee is fixed server-side; only the patient is sent.
+        body: JSON.stringify({ patientId }),
         credentials: "include",
       });
 
@@ -124,8 +121,6 @@ export default function Step4() {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-                patientId: orderData.patientId,
-                amount: orderData.amount / 100,
               }),
               credentials: "include",
             });

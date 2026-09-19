@@ -1,36 +1,32 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Spinner from "@/components/Spinner";
+import CodeInput from "@/components/CodeInput";
 import { API_BASE } from "@/lib/config";
+import { getSignupDraft, clearSignupDraft } from "@/lib/signupDraft";
+
+const OTP_LENGTH = 6;
 
 function VerificationCodeContent() {
   const router = useRouter();
 
-  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [otp, setOtp] = useState("");
   const [signupData, setSignupData] = useState({});
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(30);
-  const inputRefs = useRef([]);
 
-  // Read signup data from sessionStorage
+  // Signup data is held in memory only (it includes the password). A refresh
+  // loses it, so send the user back to the form.
   useEffect(() => {
-    const stored = sessionStorage.getItem('signupData');
-    if (!stored) {
-      alert("Signup data not found. Please sign up again.");
-      router.push("/signup");
+    const data = getSignupDraft();
+    if (!data?.email) {
+      router.replace("/signup");
       return;
     }
-
-    const data = JSON.parse(stored);
-    if (!data.email) {
-      alert("Email not found. Please sign up again.");
-      router.push("/signup");
-      return;
-    }
-
     setSignupData(data);
   }, [router]);
 
@@ -41,56 +37,19 @@ function VerificationCodeContent() {
     return () => clearTimeout(timer);
   }, [resendCooldown]);
 
-  const handleChange = (e, index) => {
-    const value = e.target.value;
-    if (!/^[0-9]?$/.test(value)) return;
-
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-
-    if (value && index < 3) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handlePaste = (e) => {
-    e.preventDefault();
-    const pasted = e.clipboardData.getData("text").trim();
-    const digits = pasted.replace(/\D/g, "").slice(0, 4);
-    if (!digits) return;
-
-    const newOtp = ["", "", "", ""];
-    for (let i = 0; i < digits.length; i++) {
-      newOtp[i] = digits[i];
-    }
-    setOtp(newOtp);
-
-    // Focus the next empty box or the last one
-    const nextEmpty = digits.length < 4 ? digits.length : 3;
-    inputRefs.current[nextEmpty]?.focus();
-  };
-
   const handleResendOtp = async () => {
     if (resendCooldown > 0 || !signupData.email) return;
 
     try {
       setLoading(true);
+      setError("");
       await axios.post(`${API_BASE}/auth/send-otp`, {
         email: signupData.email,
       });
       setResendCooldown(30);
-      setOtp(["", "", "", ""]);
-      inputRefs.current[0]?.focus();
-      alert("OTP resent successfully!");
+      setOtp("");
     } catch (err) {
-      alert(err.response?.data?.error || "Failed to resend OTP.");
+      setError(err.response?.data?.error || "Failed to resend OTP.");
     } finally {
       setLoading(false);
     }
@@ -98,29 +57,21 @@ function VerificationCodeContent() {
 
   const handleVerify = async (e) => {
     e.preventDefault();
-    const fullOtp = otp.join("");
+    setError("");
 
-    if (fullOtp.length !== 4) {
-      alert("Please enter a 4-digit OTP.");
+    if (otp.length !== OTP_LENGTH) {
+      setError(`Please enter the ${OTP_LENGTH}-digit code.`);
       return;
     }
 
     try {
       setLoading(true);
-      const payload = {
-        ...signupData,
-        otp: fullOtp,
-      };
-
-      await axios.post(
-        `${API_BASE}/auth/verify-otp`,
-        payload
-      );
-
-      sessionStorage.removeItem('signupData');
+      await axios.post(`${API_BASE}/auth/verify-otp`, { ...signupData, otp });
+      clearSignupDraft();
       router.push("/login");
     } catch (err) {
-      alert(err.response?.data?.error || "OTP verification failed.");
+      setError(err.response?.data?.error || "OTP verification failed.");
+      setOtp("");
     } finally {
       setLoading(false);
     }
@@ -150,25 +101,13 @@ function VerificationCodeContent() {
           onSubmit={handleVerify}
           className="flex flex-col justify-center items-center w-full max-w-sm mt-8 text-black gap-6"
         >
-          <div className="flex flex-row gap-3 sm:gap-4">
-            {otp.map((digit, index) => (
-              <input
-                key={index}
-                ref={(el) => (inputRefs.current[index] = el)}
-                type="text"
-                maxLength="1"
-                value={digit}
-                onChange={(e) => handleChange(e, index)}
-                onKeyDown={(e) => handleKeyDown(e, index)}
-                onPaste={handlePaste}
-                className="w-14 h-14 sm:w-16 sm:h-16 text-center text-2xl font-semibold text-gray-900 border border-gray-300 rounded-lg bg-white transition-colors duration-150 focus:outline-none focus:border-[#5F8D4E] focus:ring-2 focus:ring-[#5F8D4E]/20"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                autoComplete="one-time-code"
-                aria-label={`Digit ${index + 1}`}
-              />
-            ))}
-          </div>
+          {error && (
+            <div className="alert-error w-full" role="alert">
+              <span>{error}</span>
+            </div>
+          )}
+
+          <CodeInput length={OTP_LENGTH} value={otp} onChange={setOtp} disabled={loading} />
 
           <button type="submit" disabled={loading} className="btn-primary w-full">
             Verify OTP
