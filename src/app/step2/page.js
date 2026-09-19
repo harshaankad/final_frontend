@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { useForm } from '../../context/context';
 import Example from "@/components/navbar";
+import Stepper from "@/components/Stepper";
 
 const MAX_FILE_SIZE_MB = 10;
 
@@ -94,74 +95,51 @@ export default function Step2() {
         <Example />
       </div>
 
-      {/* PROGRESS STEPS */}
-      <div className="flex flex-row items-center justify-center mt-8 sm:mt-14 space-x-4">
-        <div className="hidden lg:flex flex-row items-center space-x-4">
-          <div className="text-gray-400 font-semibold text-2xl pr-20">
-            1 <span className="text-base">Basic Information</span>
-          </div>
-          <div className="text-[#5F8D4E] border-b-4 border-[#5F8D4E] font-semibold text-2xl pr-20">
-            2 <span className="text-base">Upload Photos</span>
-          </div>
-          <div className="text-gray-400 font-semibold text-2xl pr-20">
-            3 <span className="text-base">Choose Region</span>
-          </div>
-          <div className="text-gray-400 font-semibold text-2xl pr-20">
-            4 <span className="text-base">Payment</span>
-          </div>
-        </div>
-        <div className="lg:hidden">
-          <div className="text-[#5F8D4E] border-b-4 border-[#5F8D4E] font-semibold text-2xl">
-            2 <span className="text-base">Upload Photos</span>
-          </div>
-        </div>
-      </div>
+      <Stepper current={2} />
 
-      {/* Error message */}
-      {error && (
-        <div className="w-full max-w-4xl mx-auto mt-4 px-4">
-          <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg flex items-center justify-between">
-            <span className="text-sm">{error}</span>
-            <button onClick={() => setError("")} className="text-red-700 hover:text-red-900 ml-4">
+      {/* FORM */}
+      <form onSubmit={submitForm} className="flex flex-col w-full max-w-4xl mx-auto mt-4 sm:mt-6 text-black px-4 sm:px-6 pb-10 gap-5 sm:gap-6">
+        <h1 className="text-left text-xl sm:text-2xl lg:text-3xl font-medium text-black my-4 sm:my-8">
+          Upload Photos{firstName ? ` for ${firstName}` : ""}
+        </h1>
+
+        {/* Error message */}
+        {error && (
+          <div className="alert-error" role="alert">
+            <span>{error}</span>
+            <button type="button" onClick={() => setError("")} className="text-red-500 hover:text-red-700" aria-label="Dismiss">
               <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
             </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* FORM */}
-      <form onSubmit={submitForm} className="flex flex-col w-full max-w-4xl mx-auto mt-4 sm:mt-6 text-black p-4 sm:p-6 gap-4 sm:gap-6">
-        <span className="text-center text-xl sm:text-2xl lg:text-3xl font-medium font-poppins text-black my-4 sm:my-8">
-          Upload Photos for {firstName}
-        </span>
-
-        <div className="flex flex-col gap-6 sm:gap-8">
+        <div className="flex flex-col divide-y divide-gray-200">
           {/* Naked Eye Photo */}
-          <div className="flex flex-col sm:flex-row justify-start items-start sm:items-center py-4 w-full border-b border-gray-200 pb-6">
-            <div className="flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
-              <Image alt="Naked eye photo icon" height={60} width={60} className="rounded-full object-cover" src={"/patient.png"} />
+          <div className="flex flex-col sm:flex-row items-start py-6 sm:py-8 w-full gap-4 sm:gap-6">
+            <div className="flex-shrink-0 h-14 w-14 rounded-full bg-[#F4FFF3] flex items-center justify-center">
+              <Image alt="" height={36} width={36} className="object-contain" src={"/patient.png"} />
             </div>
             <div className="flex flex-col justify-start w-full">
-              <label className="text-black font-semibold text-base sm:text-lg font-poppins mb-2">
+              <label className="text-black font-semibold text-base sm:text-lg mb-1">
                 Clinical Photo *
               </label>
-              <span className="text-gray-600 text-sm sm:text-base font-normal italic mb-2">
-                Please upload a clear Clinical photo of the affected area
+              <span className="text-gray-600 text-sm sm:text-base mb-1">
+                Please upload a clear clinical photo of the affected area.
               </span>
-              <span className="text-gray-500 text-xs sm:text-sm font-normal mb-3">
+              <span className="text-gray-500 text-xs sm:text-sm mb-3">
                 Max file size: {MAX_FILE_SIZE_MB}MB
               </span>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => handleFileChange(e, 'naked')}
-                className="text-gray-700 bg-gray-50 border border-gray-300 rounded-lg p-3 w-full max-w-md focus:border-[#5F8D4E] focus:outline-none focus:ring-2 focus:ring-[#5F8D4E]/20 transition-all duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#C9C9C9] file:text-gray-800 hover:file:bg-[#B8B8B8] file:cursor-pointer file:transition-colors file:duration-200"
+                className="block w-full max-w-md text-sm text-gray-600 rounded-lg border border-dashed border-gray-300 bg-gray-50 p-2.5 transition-colors duration-150 hover:border-[#5F8D4E]/60 focus:outline-none focus:border-[#5F8D4E] focus:ring-2 focus:ring-[#5F8D4E]/20 file:mr-4 file:h-9 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#5F8D4E] file:text-white file:cursor-pointer hover:file:bg-[#4a7a3a] file:transition-colors"
               />
               {nakedEyePreview && (
-                <div className="mt-3 relative inline-block">
-                  <img src={nakedEyePreview} alt="Naked eye preview" className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-lg border-2 border-gray-200" />
+                <div className="mt-4 relative inline-block">
+                  <img src={nakedEyePreview} alt="Clinical photo preview" className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-lg border border-gray-200 shadow-sm" />
                   <button
                     type="button"
                     onClick={() => {
@@ -169,7 +147,8 @@ export default function Step2() {
                       setNakedEyePhoto(null);
                       setNakedEyePreview(null);
                     }}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 transition-colors"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white text-gray-600 shadow ring-1 ring-gray-200 flex items-center justify-center text-base leading-none transition-colors hover:bg-red-500 hover:text-white hover:ring-red-500"
+                    aria-label="Remove photo"
                   >
                     ×
                   </button>
@@ -179,18 +158,19 @@ export default function Step2() {
           </div>
 
           {/* Dermoscope Photos */}
-          <div className="flex flex-col sm:flex-row justify-start items-start sm:items-center py-4 w-full border-b border-gray-200 pb-6">
-            <div className="flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
-              <Image alt="Dermoscope photo icon" height={60} width={60} className="rounded-full object-cover" src={"/patient.png"} />
+          <div className="flex flex-col sm:flex-row items-start py-6 sm:py-8 w-full gap-4 sm:gap-6">
+            <div className="flex-shrink-0 h-14 w-14 rounded-full bg-[#F4FFF3] flex items-center justify-center">
+              <Image alt="" height={36} width={36} className="object-contain" src={"/patient.png"} />
             </div>
             <div className="flex flex-col justify-start w-full">
-              <label className="text-black font-semibold text-base sm:text-lg font-poppins mb-2">
-                Dermoscope Photos * ({dermoscopePhotos.length} uploaded)
+              <label className="text-black font-semibold text-base sm:text-lg mb-1">
+                Dermoscope Photos *{" "}
+                <span className="font-normal text-gray-500 text-sm">({dermoscopePhotos.length} uploaded)</span>
               </label>
-              <span className="text-gray-600 text-sm sm:text-base font-normal italic mb-2">
+              <span className="text-gray-600 text-sm sm:text-base mb-1">
                 Please upload one or more dermoscope photos of the affected area. You can select multiple files at once or add them one by one.
               </span>
-              <span className="text-gray-500 text-xs sm:text-sm font-normal mb-3">
+              <span className="text-gray-500 text-xs sm:text-sm mb-3">
                 Max file size: {MAX_FILE_SIZE_MB}MB per image
               </span>
               <input
@@ -198,21 +178,22 @@ export default function Step2() {
                 accept="image/*"
                 multiple
                 onChange={(e) => handleFileChange(e, 'dermoscope')}
-                className="text-gray-700 bg-gray-50 border border-gray-300 rounded-lg p-3 w-full max-w-md focus:border-[#5F8D4E] focus:outline-none focus:ring-2 focus:ring-[#5F8D4E]/20 transition-all duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#C9C9C9] file:text-gray-800 hover:file:bg-[#B8B8B8] file:cursor-pointer file:transition-colors file:duration-200"
+                className="block w-full max-w-md text-sm text-gray-600 rounded-lg border border-dashed border-gray-300 bg-gray-50 p-2.5 transition-colors duration-150 hover:border-[#5F8D4E]/60 focus:outline-none focus:border-[#5F8D4E] focus:ring-2 focus:ring-[#5F8D4E]/20 file:mr-4 file:h-9 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#5F8D4E] file:text-white file:cursor-pointer hover:file:bg-[#4a7a3a] file:transition-colors"
               />
               {dermoscopePreviews && dermoscopePreviews.length > 0 && (
-                <div className="flex flex-wrap gap-3 mt-3">
+                <div className="flex flex-wrap gap-4 mt-4">
                   {dermoscopePreviews.map((src, idx) => (
                     <div key={idx} className="relative">
                       <img
                         src={src}
-                        alt={`dermoscope-${idx}`}
-                        className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-lg border-2 border-gray-200"
+                        alt={`Dermoscope photo ${idx + 1}`}
+                        className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-lg border border-gray-200 shadow-sm"
                       />
                       <button
                         type="button"
                         onClick={() => removeDermoscopePhoto(idx)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 transition-colors"
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white text-gray-600 shadow ring-1 ring-gray-200 flex items-center justify-center text-base leading-none transition-colors hover:bg-red-500 hover:text-white hover:ring-red-500"
+                        aria-label="Remove photo"
                       >
                         ×
                       </button>
@@ -226,32 +207,28 @@ export default function Step2() {
 
         {/* Validation - only after attempt */}
         {attempted && !isFormValid() && (
-          <div className="text-red-500 text-sm font-poppins mt-2">
-            * Please upload both required photos to continue.
+          <div className="alert-error" role="alert">
+            <span>Please upload both required photos to continue.</span>
           </div>
         )}
 
         {/* Navigation Buttons */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-2 sm:mt-4">
           <Link href="/step1" className="w-full sm:w-auto order-2 sm:order-1">
-            <button type="button" className="w-full sm:w-auto font-bold text-base sm:text-lg h-[45px] sm:h-[49px] rounded-[7px] px-4 sm:px-6 py-2.5 font-poppins border-2 border-[#5F8D4E] text-[#5F8D4E] hover:bg-[#5F8D4E] hover:text-white transition-all duration-300 min-w-[120px]">
+            <button type="button" className="btn-secondary w-full sm:w-auto sm:min-w-[140px]">
               Back
             </button>
           </Link>
           <div className="w-full sm:w-auto order-1 sm:order-2">
             {isFormValid() ? (
-              <button
-                type="submit"
-                className="w-full sm:w-auto font-bold text-base sm:text-lg md:text-xl h-[45px] sm:h-[49px] rounded-[7px] px-4 sm:px-6 py-2.5 font-poppins transform transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-300/50 min-w-[120px] bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] hover:from-[#4a7a3a] hover:to-[#3d6330] relative overflow-hidden group text-[#ffffff]"
-              >
-                <span className="relative z-10">Next Step</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-600/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+              <button type="submit" className="btn-primary w-full sm:w-auto sm:min-w-[160px]">
+                Next Step
               </button>
             ) : (
               <button
                 type="button"
                 onClick={() => setAttempted(true)}
-                className="w-full sm:w-auto font-bold text-base sm:text-lg md:text-xl h-[45px] sm:h-[49px] rounded-[7px] px-4 sm:px-6 py-2.5 font-poppins min-w-[120px] bg-gray-400 text-gray-600 cursor-not-allowed opacity-50"
+                className="btn-muted w-full sm:w-auto sm:min-w-[160px]"
               >
                 Next Step
               </button>

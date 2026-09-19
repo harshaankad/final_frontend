@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Spinner from "@/components/Spinner";
+import { API_BASE } from "@/lib/config";
 
 function VerificationCodeContent() {
   const router = useRouter();
@@ -81,7 +82,7 @@ function VerificationCodeContent() {
 
     try {
       setLoading(true);
-      await axios.post("https://dermatology-backend-8xqf.onrender.com/api/auth/send-otp", {
+      await axios.post(`${API_BASE}/auth/send-otp`, {
         email: signupData.email,
       });
       setResendCooldown(30);
@@ -112,7 +113,7 @@ function VerificationCodeContent() {
       };
 
       await axios.post(
-        "https://dermatology-backend-8xqf.onrender.com/api/auth/verify-otp",
+        `${API_BASE}/auth/verify-otp`,
         payload
       );
 
@@ -128,24 +129,28 @@ function VerificationCodeContent() {
   return (
     <div className="relative">
       <div
-        className={`bg-white w-full min-h-screen flex flex-col justify-center items-center py-8 sm:py-16 px-4 ${
+        className={`bg-white w-full min-h-screen flex flex-col justify-center items-center py-10 sm:py-16 px-4 transition-all duration-300 ${
           loading ? "blur-sm" : ""
         }`}
       >
-        <span className="text-center text-3xl sm:text-4xl md:text-5xl font-semibold text-black mb-4 sm:mb-8">
-          Verify Your Email
+        <h1 className="text-2xl sm:text-3xl font-semibold text-center text-black">
+          <span className="text-brandGreen">Derma</span>Drishti
+        </h1>
+
+        <span className="text-center text-3xl sm:text-4xl md:text-5xl font-medium text-black mt-4 mb-3 sm:mt-6 sm:mb-4">
+          Verify your email
         </span>
 
-        <span className="font-normal text-center text-sm sm:text-lg text-black max-w-xs sm:max-w-lg px-2">
-          We have sent a verification code to your email:{" "}
-          <strong>{signupData.email}</strong>
+        <span className="font-normal text-gray-600 text-center text-sm sm:text-base max-w-xs sm:max-w-md px-2">
+          We have sent a verification code to{" "}
+          <strong className="text-gray-900 font-semibold">{signupData.email}</strong>
         </span>
 
         <form
           onSubmit={handleVerify}
-          className="flex flex-col justify-center items-center w-full max-w-xs sm:max-w-sm md:max-w-md mt-6 text-black p-4"
+          className="flex flex-col justify-center items-center w-full max-w-sm mt-8 text-black gap-6"
         >
-          <div className="flex flex-row space-x-4 sm:space-x-8 md:space-x-12">
+          <div className="flex flex-row gap-3 sm:gap-4">
             {otp.map((digit, index) => (
               <input
                 key={index}
@@ -156,38 +161,30 @@ function VerificationCodeContent() {
                 onChange={(e) => handleChange(e, index)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
                 onPaste={handlePaste}
-                className="w-12 h-12 sm:w-14 sm:h-14 text-center text-xl sm:text-2xl font-bold border-2 border-gray-400 rounded-xl focus:outline-none focus:border-[#5F8D4E] font-poppins transition-colors duration-200"
+                className="w-14 h-14 sm:w-16 sm:h-16 text-center text-2xl font-semibold text-gray-900 border border-gray-300 rounded-lg bg-white transition-colors duration-150 focus:outline-none focus:border-[#5F8D4E] focus:ring-2 focus:ring-[#5F8D4E]/20"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 autoComplete="one-time-code"
+                aria-label={`Digit ${index + 1}`}
               />
             ))}
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full font-bold text-base sm:text-lg md:text-xl h-[45px] sm:h-[49px] rounded-[7px] px-4 sm:px-6 py-2.5 font-poppins transform transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-300/50 min-w-[120px] bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] hover:from-[#4a7a3a] hover:to-[#3d6330] relative overflow-hidden group mt-6 text-[#ffffff] ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            <span className="relative z-10">
-              {loading ? <Spinner /> : "Verify OTP"}
-            </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-600/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+          <button type="submit" disabled={loading} className="btn-primary w-full">
+            Verify OTP
           </button>
 
-          <div className="mt-4 text-center">
+          <div className="text-center">
             {resendCooldown > 0 ? (
-              <span className="text-sm text-gray-500 font-poppins">
-                Resend OTP in <strong>{resendCooldown}s</strong>
+              <span className="text-sm text-gray-500">
+                Resend OTP in <strong className="text-gray-700">{resendCooldown}s</strong>
               </span>
             ) : (
               <button
                 type="button"
                 onClick={handleResendOtp}
                 disabled={loading}
-                className="text-sm text-[#5F8D4E] font-semibold font-poppins hover:underline transition-all duration-200 disabled:opacity-50"
+                className="link-brand text-sm disabled:opacity-50"
               >
                 Resend OTP
               </button>

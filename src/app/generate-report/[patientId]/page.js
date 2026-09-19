@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import Example from '@/components/navbar';
 import ImageEditor from '@/components/ImageEditor';
 import Spinner from '@/components/Spinner';
-import { Download } from 'lucide-react';
+import { Download, CheckCircle2, Circle } from 'lucide-react';
+import { API_BASE } from "@/lib/config";
 
 export default function AdminGenerate() {
   const { patientId } = useParams();
@@ -25,7 +26,7 @@ export default function AdminGenerate() {
   const [dermoscopeSavedStates, setDermoscopeSavedStates] = useState([]);
   const [formError, setFormError] = useState('');
 
-  const BASE_URL = 'https://dermatology-backend-8xqf.onrender.com/api';
+  const BASE_URL = API_BASE;
 
   const getAuthToken = () => {
     if (typeof window !== 'undefined') {
@@ -195,8 +196,8 @@ export default function AdminGenerate() {
 
   const LoadingOverlay = () => (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
-      <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center space-y-4 max-w-sm mx-4">
-        <Spinner />
+      <div className="bg-white rounded-xl p-8 shadow-2xl flex flex-col items-center space-y-4 max-w-sm mx-4">
+        <div className="py-4"><Spinner color="#5F8D4E" /></div>
         <div className="text-lg font-semibold text-gray-800">Generating Report...</div>
         <div className="text-sm text-gray-600 text-center">
           Please wait while we process your request
@@ -257,11 +258,11 @@ export default function AdminGenerate() {
           <Example />
         </header>
         <div className="flex-1 flex flex-col items-center justify-center p-4 gap-4">
-          <div className="text-center text-red-600 text-lg sm:text-xl font-poppins">Patient not found</div>
+          <div className="text-center text-red-600 text-lg sm:text-xl">Patient not found</div>
           <p className="text-sm text-gray-500">The patient may have been removed or the link is invalid.</p>
           <button
             onClick={() => router.push('/patients')}
-            className="text-sm font-semibold text-[#5F8D4E] hover:underline font-poppins"
+            className="text-sm font-semibold text-[#5F8D4E] hover:underline"
           >
             Back to Patients
           </button>
@@ -282,25 +283,29 @@ export default function AdminGenerate() {
         <div className="flex flex-col space-y-8">
           {/* Naked Eye Image Editor */}
           <div className="space-y-4">
-            <h2 className="text-lg sm:text-xl font-semibold text-black flex flex-col sm:flex-row items-center justify-center text-center sm:text-left">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 flex items-center justify-center gap-2 text-center">
               <span>Edit Macroscopic Image</span>
-              {nakedEyeSaved && <span className="text-green-600 text-sm mt-1 sm:mt-0 sm:ml-2">&#10003; Saved</span>}
+              {nakedEyeSaved && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#F4FFF3] px-2.5 py-0.5 text-xs font-medium text-[#3d6330]">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Saved
+                </span>
+              )}
             </h2>
             <div className="flex justify-center">
-              <div className="inline-block">
+              <div className="w-full">
                 <ImageEditor
                   imageUrl={patient.nakedEyePhoto}
                   onEditComplete={handleNakedEyeEditComplete}
-                  preserveOriginalSize={true}
                   downloadButton={
-                    <Button
+                    <button
+                      type="button"
                       onClick={handleDownloadNakedEye}
                       disabled={!nakedEyeSaved || !editedNakedEyeFile}
-                      className="flex items-center gap-2 bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] hover:from-[#4a7a3a] hover:to-[#3d6330] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md transition-all"
+                      className="btn-secondary h-10 sm:h-10 px-4 text-sm sm:text-sm"
                     >
-                      <Download size={18} />
+                      <Download size={16} />
                       Download Image
-                    </Button>
+                    </button>
                   }
                 />
               </div>
@@ -310,25 +315,29 @@ export default function AdminGenerate() {
           {/* Multiple Dermoscope Image Editors */}
           {patient.dermoscopePhotos.map((dermoscopeUrl, index) => (
             <div key={index} className="space-y-4">
-              <h2 className="text-lg sm:text-xl font-semibold text-black flex flex-col sm:flex-row items-center justify-center text-center sm:text-left">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 flex items-center justify-center gap-2 text-center">
                 <span>Edit Dermoscopic Image {patient.dermoscopePhotos.length > 1 ? `${index + 1}` : ''}</span>
-                {dermoscopeSavedStates[index] && <span className="text-green-600 text-sm mt-1 sm:mt-0 sm:ml-2">&#10003; Saved</span>}
+                {dermoscopeSavedStates[index] && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-[#F4FFF3] px-2.5 py-0.5 text-xs font-medium text-[#3d6330]">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Saved
+                  </span>
+                )}
               </h2>
               <div className="flex justify-center">
-                <div className="inline-block">
+                <div className="w-full">
                   <ImageEditor
                     imageUrl={dermoscopeUrl}
                     onEditComplete={(file) => handleDermoscopeEditComplete(file, index)}
-                    preserveOriginalSize={true}
                     downloadButton={
-                      <Button
+                      <button
+                        type="button"
                         onClick={() => handleDownloadDermoscope(index)}
                         disabled={!dermoscopeSavedStates[index] || !editedDermoscopeFiles[index]}
-                        className="flex items-center gap-2 bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] hover:from-[#4a7a3a] hover:to-[#3d6330] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md transition-all"
+                        className="btn-secondary h-10 sm:h-10 px-4 text-sm sm:text-sm"
                       >
-                        <Download size={18} />
+                        <Download size={16} />
                         Download Image
-                      </Button>
+                      </button>
                     }
                   />
                 </div>
@@ -339,11 +348,11 @@ export default function AdminGenerate() {
 
         {/* Patient Info (Read-only) */}
         <div className="mt-8 sm:mt-10 max-w-4xl mx-auto">
-          <div className="bg-gray-50 border-2 border-gray-200 p-4 sm:p-6 rounded-lg">
-            <h3 className="text-lg sm:text-xl font-semibold text-black mb-4">Patient Information</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm sm:text-base text-gray-800">
+          <div className="surface bg-gray-50/60 p-5 sm:p-6">
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Patient Information</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm sm:text-base text-gray-700">
               <div><strong>Name:</strong> {patient.firstname} {patient.lastname}</div>
-              <div><strong>Gender / Age:</strong> {patient.gender} / {patient.age}</div>
+              <div><strong>Gender / Age:</strong> <span className="capitalize">{patient.gender}</span> / {patient.age}</div>
               <div><strong>Site of Lesion:</strong> {patient.siteOfInfection}</div>
               <div><strong>Duration:</strong> {patient.duration}</div>
               <div className="sm:col-span-2"><strong>Previous Treatment:</strong> {patient.previousTreatment || 'None'}</div>
@@ -355,12 +364,12 @@ export default function AdminGenerate() {
 
         {/* Form Section */}
         <div className="mt-8 sm:mt-10 max-w-4xl mx-auto">
-          <div className="bg-white border-2 border-gray-200 p-4 sm:p-6 rounded-lg space-y-6">
-            <h3 className="text-lg sm:text-xl font-semibold text-black mb-4">Report Details</h3>
+          <div className="surface p-5 sm:p-6 space-y-6">
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Report Details</h3>
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="block font-medium text-black text-sm sm:text-base" htmlFor="clinicalImpression">
+                <label className="field-label" htmlFor="clinicalImpression">
                   Final Impression *
                 </label>
                 <Input
@@ -368,12 +377,12 @@ export default function AdminGenerate() {
                   value={clinicalImpression}
                   onChange={(e) => setClinicalImpression(e.target.value)}
                   placeholder="e.g. Possible early-stage melanoma"
-                  className="w-full text-black text-sm sm:text-base h-10 sm:h-11"
+                  className=""
                 />
               </div>
 
               <div className="space-y-2 lg:row-span-2">
-                <label className="block font-medium text-black text-sm sm:text-base" htmlFor="dermoscopeFindings">
+                <label className="field-label" htmlFor="dermoscopeFindings">
                   Dermoscopic Findings *
                 </label>
                 <Textarea
@@ -381,37 +390,39 @@ export default function AdminGenerate() {
                   value={dermoscopeFindings}
                   onChange={(e) => setDermoscopeFindings(e.target.value)}
                   placeholder="Describe the dermoscopic findings from all images..."
-                  className="w-full h-32 text-black sm:h-40 lg:h-full text-sm sm:text-base resize-none"
+                  className="h-40"
                 />
               </div>
             </div>
 
             {/* Progress Indicator */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-sm mb-2 text-black">Progress:</h4>
-              <div className="space-y-1 text-sm">
-                <div className={`flex items-center gap-2 ${nakedEyeSaved ? 'text-green-600' : 'text-gray-500'}`}>
-                  {nakedEyeSaved ? '✓' : '○'} Macroscopic image edited and saved
-                </div>
-                {patient.dermoscopePhotos.map((_, index) => (
-                  <div key={index} className={`flex items-center gap-2 ${dermoscopeSavedStates[index] ? 'text-green-600' : 'text-gray-500'}`}>
-                    {dermoscopeSavedStates[index] ? '✓' : '○'} Dermoscopic image {patient.dermoscopePhotos.length > 1 ? `${index + 1} ` : ''}edited and saved
+              <h4 className="font-semibold text-sm mb-2.5 text-gray-900">Progress</h4>
+              <div className="space-y-1.5 text-sm">
+                {[
+                  { done: nakedEyeSaved, label: 'Macroscopic image edited and saved' },
+                  ...patient.dermoscopePhotos.map((_, index) => ({
+                    done: !!dermoscopeSavedStates[index],
+                    label: `Dermoscopic image ${patient.dermoscopePhotos.length > 1 ? `${index + 1} ` : ''}edited and saved`,
+                  })),
+                  { done: !!dermoscopeFindings.trim(), label: 'Dermoscopic findings entered' },
+                  { done: !!clinicalImpression.trim(), label: 'Clinical impression entered' },
+                ].map((item, i) => (
+                  <div key={i} className={`flex items-center gap-2 ${item.done ? 'text-[#3d6330]' : 'text-gray-500'}`}>
+                    {item.done
+                      ? <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-[#5F8D4E]" />
+                      : <Circle className="h-4 w-4 flex-shrink-0 text-gray-300" />}
+                    {item.label}
                   </div>
                 ))}
-                <div className={`flex items-center gap-2 ${dermoscopeFindings.trim() ? 'text-green-600' : 'text-gray-500'}`}>
-                  {dermoscopeFindings.trim() ? '✓' : '○'} Dermoscopic findings entered
-                </div>
-                <div className={`flex items-center gap-2 ${clinicalImpression.trim() ? 'text-green-600' : 'text-gray-500'}`}>
-                  {clinicalImpression.trim() ? '✓' : '○'} Clinical impression entered
-                </div>
               </div>
             </div>
 
             {/* Error message */}
             {formError && (
-              <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg flex items-center justify-between">
-                <span className="text-sm">{formError}</span>
-                <button onClick={() => setFormError('')} className="text-red-700 hover:text-red-900 ml-4">
+              <div className="alert-error" role="alert">
+                <span>{formError}</span>
+                <button onClick={() => setFormError('')} className="text-red-500 hover:text-red-700" aria-label="Dismiss">
                   <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
@@ -420,7 +431,7 @@ export default function AdminGenerate() {
             )}
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200 justify-center">
               <Button
                 onClick={handleGenerate}
                 disabled={
@@ -430,12 +441,9 @@ export default function AdminGenerate() {
                   !dermoscopeFindings.trim() ||
                   !clinicalImpression.trim()
                 }
-                className="w-full sm:w-auto font-bold text-lg sm:text-xl h-[49px] sm:h-[49px] rounded-[7px] px-6 sm:px-5 py-2.5 transform transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-300/50 min-w-[120px] bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] hover:from-[#4a7a3a] hover:to-[#3d6330] relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
+                className="w-full sm:w-auto sm:min-w-[200px]"
               >
-                <span className="relative z-10">
-                  {generating ? 'Generating...' : 'Generate Report'}
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-600/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                {generating ? 'Generating...' : 'Generate Report'}
               </Button>
             </div>
           </div>

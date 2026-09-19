@@ -8,13 +8,14 @@ import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Example from "@/components/navbar";
+import { API_BASE } from "@/lib/config";
 
 // Skeleton Loading Component
 const PatientSkeleton = ({ isAdmin }) => (
-  <div className="bg-white rounded-md p-4 border border-gray-100 animate-pulse">
+  <div className="bg-white rounded-lg p-4 border border-gray-200 animate-pulse">
     <div className={`grid ${isAdmin ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-7' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6'} gap-4 items-center`}>
       <div className="flex items-center gap-3 col-span-2 sm:col-span-1">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 rounded-md flex-shrink-0"></div>
+        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 rounded-lg flex-shrink-0"></div>
         <div className="flex flex-col gap-2 min-w-0 flex-1">
           <div className="h-4 bg-gray-200 rounded w-20 sm:w-24"></div>
           <div className="h-3 bg-gray-200 rounded w-12 sm:w-16 sm:hidden"></div>
@@ -66,7 +67,7 @@ export default function PatientsPage() {
   const observerRef = useRef();
   const router = useRouter();
 
-  const BASE_URL = "https://dermatology-backend-8xqf.onrender.com/api";
+  const BASE_URL = API_BASE;
 
   const regularEndpoints = {
     all: "/all-patients",
@@ -279,14 +280,14 @@ export default function PatientsPage() {
     ];
 
     return (
-      <div className="flex gap-4 sm:gap-6 lg:gap-8 mb-6 px-4 sm:px-8 lg:px-20 overflow-x-auto">
+      <div className="flex gap-2 sm:gap-3 mb-6 px-4 sm:px-8 lg:px-20 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`h-10 sm:h-11 px-3 sm:px-4 rounded-xl font-semibold text-xs sm:text-sm font-['Poppins-SemiBold',Helvetica] transition-all duration-300 whitespace-nowrap flex-shrink-0 ${
+            className={`h-10 px-4 rounded-lg font-semibold text-sm transition-colors duration-200 whitespace-nowrap flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5F8D4E]/40 ${
               activeTab === tab.id
-                ? "bg-[#F4FFF3] text-[#5F8D4E] shadow-sm scale-105"
+                ? "bg-[#F4FFF3] text-[#5F8D4E]"
                 : "bg-transparent text-gray-500 hover:text-[#5F8D4E] hover:bg-gray-50"
             }`}
           >
@@ -298,39 +299,33 @@ export default function PatientsPage() {
   };
 
   const DesktopHeader = () => (
-    <div className="hidden lg:block bg-gray-50 rounded-md border-b border-gray-300 p-4 mb-4">
+    <div className="hidden lg:block bg-gray-50 rounded-lg px-4 py-3 mb-3">
       <div className={`grid ${isAdmin ? 'grid-cols-7' : 'grid-cols-6'} gap-4`}>
-        <div className="font-semibold text-xs text-[#b5b5c3] pl-16">Name</div>
-        <div className="font-semibold text-xs text-[#b5b5c3]">Age</div>
+        <div className="text-xs font-semibold uppercase tracking-wide text-gray-500 pl-16">Name</div>
+        <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Age</div>
         {isAdmin && (
-          <div className="font-semibold text-xs text-[#b5b5c3] ml-6">Posted By</div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-gray-500 pl-9">Posted By</div>
         )}
-        <div className="font-semibold text-xs text-[#b5b5c3]">Gender</div>
-        <div className="font-semibold text-xs text-[#b5b5c3]">Duration</div>
-        <div className="font-semibold text-xs text-[#b5b5c3]">Date added</div>
-        <div className="font-semibold text-xs text-[#b5b5c3] pl-10">Status</div>
+        <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Gender</div>
+        <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Duration</div>
+        <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Date added</div>
+        <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Status</div>
       </div>
     </div>
   );
 
   const TabletHeader = () => (
-    <div className="hidden sm:block lg:hidden bg-gray-50 rounded-md border-b border-gray-300 p-4 mb-4">
+    <div className="hidden sm:block lg:hidden bg-gray-50 rounded-lg px-4 py-3 mb-3">
       <div className="grid grid-cols-3 gap-4">
-        <div className="font-semibold text-xs text-[#b5b5c3] pl-12">Name</div>
-        <div className="font-semibold text-xs text-[#b5b5c3]">Age</div>
-        <div className="font-semibold text-xs text-[#b5b5c3] text-right">Status</div>
+        <div className="text-xs font-semibold uppercase tracking-wide text-gray-500 pl-[60px]">Name</div>
+        <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Age</div>
+        <div className="text-xs font-semibold uppercase tracking-wide text-gray-500 text-right">Status</div>
       </div>
     </div>
   );
 
-  const MobileHeader = () => (
-    <div className="block sm:hidden bg-gray-50 rounded-md border-b border-gray-300 p-4 mb-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="font-semibold text-xs text-[#b5b5c3] pl-12">Name</div>
-        <div className="font-semibold text-xs text-[#b5b5c3] text-right">Status</div>
-      </div>
-    </div>
-  );
+  // On phones the rows read as cards, so a column header adds noise; it is hidden there.
+  const MobileHeader = () => null;
 
   if (loadingAuth) {
     return (
@@ -357,11 +352,11 @@ export default function PatientsPage() {
 
       <div className="flex flex-col sm:flex-row w-full items-start sm:items-center justify-between mb-4 sm:mb-6 px-4 sm:px-8 lg:px-20 gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="font-lg text-xl sm:text-2xl text-[#212121] leading-tight font-['Poppins-Medium',Helvetica]">
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 leading-tight">
             List of Patients
           </h1>
-          <p className="font-medium text-sm sm:text-md text-[#b5b5c3] leading-tight font-['Poppins-Medium',Helvetica]">
-            {filteredPatients.length} recorded patients
+          <p className="text-sm text-gray-500 leading-tight">
+            {filteredPatients.length} recorded {filteredPatients.length === 1 ? "patient" : "patients"}
           </p>
           {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
         </div>
@@ -369,13 +364,10 @@ export default function PatientsPage() {
         {!isAdmin && (
           <button
             onClick={handleAddPatient}
-            className={`w-full sm:w-auto font-bold text-sm sm:text-base h-[40px] sm:h-[45px] rounded-[7px] px-4 sm:px-6 py-2.5 font-poppins transform transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-300/50 min-w-[120px] sm:min-w-[180px] bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] hover:from-[#4a7a3a] hover:to-[#3d6330] relative overflow-hidden group text-[#ffffff] flex items-center justify-center gap-2`}
+            className="btn-primary w-full sm:w-auto h-11 sm:h-11 text-base sm:text-base sm:min-w-[170px]"
           >
-            <span className="relative z-10 flex items-center gap-2">
-              <User className="w-4 h-4 sm:w-5 sm:h-5" />
-              Add Patient
-            </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-600/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+            <User className="w-5 h-5" />
+            Add Patient
           </button>
         )}
       </div>
@@ -389,7 +381,7 @@ export default function PatientsPage() {
             placeholder="Search by patient name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-10 pl-10 pr-4 border border-gray-300 rounded-lg text-sm font-poppins focus:outline-none focus:ring-2 focus:ring-[#5F8D4E] focus:border-transparent transition-all duration-200"
+            className="field-input h-11 sm:h-11 pl-10 text-sm sm:text-sm"
           />
         </div>
       </div>
@@ -409,7 +401,7 @@ export default function PatientsPage() {
               {displayedPatients.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-gray-500">
                   <User className="w-12 h-12 text-gray-300 mb-4" />
-                  <p className="text-lg font-medium font-poppins mb-1">
+                  <p className="text-lg font-medium mb-1">
                     {searchQuery ? "No matching patients found" : "No patients found"}
                   </p>
                   <p className="text-sm text-gray-400 mb-4">
@@ -422,7 +414,7 @@ export default function PatientsPage() {
                   {!isAdmin && !searchQuery && (
                     <button
                       onClick={handleAddPatient}
-                      className="text-sm font-semibold text-[#5F8D4E] hover:underline font-poppins"
+                      className="link-brand text-sm"
                     >
                       + Add Patient
                     </button>
@@ -437,10 +429,10 @@ export default function PatientsPage() {
                         ? lastPatientElementRef
                         : null
                     }
-                    className="bg-white hover:bg-green-50 hover:shadow-lg hover:scale-[1.02] transform transition-all duration-300 ease-in-out cursor-pointer rounded-md p-3 sm:p-4 border border-gray-100 animate-fadeInUp"
+                    className="bg-white rounded-lg p-3 sm:p-4 border border-gray-200 cursor-pointer transition-colors duration-200 hover:bg-[#F4FFF3]/50 hover:border-[#5F8D4E]/40 animate-fadeInUp"
                     onClick={() => handleRowClick(patient)}
                     style={{
-                      animationDelay: `${index * 50}ms`,
+                      animationDelay: `${Math.min(index, 8) * 30}ms`,
                       animationFillMode: "both",
                     }}
                   >
@@ -448,7 +440,7 @@ export default function PatientsPage() {
                     <div className="block sm:hidden">
                       <div className="grid grid-cols-2 gap-4 items-center">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-[#f3f6f9] rounded-md flex items-center justify-center flex-shrink-0">
+                          <div className="w-10 h-10 bg-[#f3f6f9] rounded-lg flex items-center justify-center flex-shrink-0">
                             <Avatar className="w-8 h-8">
                               <img
                                 src="/patient.png"
@@ -460,7 +452,7 @@ export default function PatientsPage() {
                             <div className="font-semibold text-sm text-[#464e5f] truncate">
                               {fullName(patient)}
                             </div>
-                            <div className="font-medium text-xs text-[#b5b5c3]">
+                            <div className="font-medium text-xs text-gray-500 capitalize">
                               {patient.age} &bull; {patient.gender}
                             </div>
                             {isAdmin && (
@@ -491,7 +483,7 @@ export default function PatientsPage() {
                     <div className="hidden sm:block lg:hidden">
                       <div className="grid grid-cols-3 gap-4 items-center">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-[#f3f6f9] rounded-md flex items-center justify-center flex-shrink-0">
+                          <div className="w-12 h-12 bg-[#f3f6f9] rounded-lg flex items-center justify-center flex-shrink-0">
                             <Avatar className="w-10 h-10">
                               <img
                                 src="/patient.png"
@@ -503,7 +495,7 @@ export default function PatientsPage() {
                             <div className="font-semibold text-sm text-[#464e5f] truncate">
                               {fullName(patient)}
                             </div>
-                            <div className="font-medium text-xs text-[#b5b5c3]">
+                            <div className="font-medium text-xs text-gray-500 capitalize">
                               {patient.gender}
                             </div>
                             {isAdmin && (
@@ -537,7 +529,7 @@ export default function PatientsPage() {
                     <div className="hidden lg:block">
                       <div className={`grid ${isAdmin ? 'grid-cols-7' : 'grid-cols-6'} gap-4 items-center`}>
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-[#f3f6f9] rounded-md flex items-center justify-center">
+                          <div className="w-12 h-12 bg-[#f3f6f9] rounded-lg flex items-center justify-center">
                             <Avatar className="w-10 h-10">
                               <img
                                 src="/patient.png"
@@ -569,7 +561,7 @@ export default function PatientsPage() {
                           </div>
                         )}
 
-                        <div className="font-semibold text-sm text-[#464e5f]">
+                        <div className="font-semibold text-sm text-[#464e5f] capitalize">
                           {patient.gender}
                         </div>
 
@@ -583,7 +575,7 @@ export default function PatientsPage() {
                               ? new Date(patient.createdAt).toLocaleDateString()
                               : "-"}
                           </div>
-                          <div className="font-medium text-xs text-[#b5b5c3]">
+                          <div className="font-medium text-xs text-gray-500">
                             {patient.createdAt
                               ? new Date(patient.createdAt).toLocaleTimeString([], {
                                   hour: "2-digit",
@@ -595,7 +587,7 @@ export default function PatientsPage() {
 
                         <div>
                           <Badge
-                            className={`w-[100px] px-4 py-1 font-medium text-xs ${
+                            className={`inline-flex justify-center min-w-[96px] px-4 py-1 font-medium text-xs ${
                               patient.status === "Completed"
                                 ? "bg-[#F4FFF3] text-[#5F8D4E]"
                                 : "bg-[#ffe2e5] text-[#f64e60]"
@@ -627,7 +619,7 @@ export default function PatientsPage() {
         @keyframes fadeInUp {
           from {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(6px);
           }
           to {
             opacity: 1;
@@ -636,7 +628,7 @@ export default function PatientsPage() {
         }
 
         .animate-fadeInUp {
-          animation: fadeInUp 0.6s ease-out;
+          animation: fadeInUp 0.25s ease-out;
         }
       `}</style>
     </Card>
@@ -646,7 +638,7 @@ export default function PatientsPage() {
         <div style={{ backgroundColor: "#ffffff", borderRadius: "16px", maxWidth: "520px", width: "90%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 25px 50px rgba(0,0,0,0.3)" }}>
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px", borderBottom: "1px solid #e5e7eb" }}>
-            <h2 style={{ fontSize: "18px", fontWeight: 600, color: "#212121", fontFamily: "Poppins, sans-serif", margin: 0 }}>
+            <h2 style={{ fontSize: "18px", fontWeight: 600, color: "#212121", margin: 0 }}>
               Submission Guidelines
             </h2>
             <button
@@ -659,10 +651,7 @@ export default function PatientsPage() {
 
           {/* Body */}
           <div style={{ padding: "20px" }}>
-            <h3 style={{ fontSize: "14px", fontWeight: 600, color: "#5F8D4E", marginBottom: "14px", fontFamily: "Poppins, sans-serif" }}>
-              Submission Guidelines
-            </h3>
-            <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px 0", fontSize: "13px", color: "#374151", fontFamily: "Poppins, sans-serif", lineHeight: "1.6" }}>
+            <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px 0", fontSize: "13px", color: "#374151", lineHeight: "1.6" }}>
               <li style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "flex-start" }}>
                 <span style={{ color: "#5F8D4E", fontSize: "16px", lineHeight: "1.3", flexShrink: 0 }}>&#x2022;</span>
                 <span>Upload <strong>non-polarized</strong>, <strong>polarized</strong>, and <strong>ultraviolet-induced fluorescence</strong> (optional) images.</span>
@@ -692,10 +681,10 @@ export default function PatientsPage() {
             <div style={{ backgroundColor: "#FFF8E1", border: "1px solid #FFE082", borderRadius: "10px", padding: "16px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
               <span style={{ fontSize: "18px", flexShrink: 0 }}>&#x26A0;&#xFE0F;</span>
               <div>
-                <h4 style={{ fontSize: "13px", fontWeight: 700, color: "#B8860B", marginBottom: "6px", fontFamily: "Poppins, sans-serif", margin: "0 0 6px 0" }}>
+                <h4 style={{ fontSize: "13px", fontWeight: 700, color: "#B8860B", marginBottom: "6px", margin: "0 0 6px 0" }}>
                   Disclaimer
                 </h4>
-                <p style={{ fontSize: "12.5px", color: "#6D4C00", fontFamily: "Poppins, sans-serif", lineHeight: "1.65", margin: 0 }}>
+                <p style={{ fontSize: "12.5px", color: "#6D4C00", lineHeight: "1.65", margin: 0 }}>
                   Dermoscopy is an evolving field and diagnostic criteria are not yet well established for many dermatoses. Dermoscopy-based reporting may not always provide a definitive diagnosis. For therapeutic management—especially prior to initiating biological therapy or immunosuppressive treatment—<strong>histopathological examination</strong> and relevant <strong>immunohistochemical studies</strong> are strongly recommended.
                 </p>
               </div>
@@ -706,13 +695,13 @@ export default function PatientsPage() {
           <div style={{ display: "flex", gap: "12px", padding: "20px", borderTop: "1px solid #e5e7eb" }}>
             <button
               onClick={() => setShowModal(false)}
-              style={{ flex: 1, height: "44px", borderRadius: "8px", border: "1px solid #d1d5db", backgroundColor: "#ffffff", color: "#374151", fontWeight: 600, fontSize: "14px", fontFamily: "Poppins, sans-serif", cursor: "pointer" }}
+              style={{ flex: 1, height: "44px", borderRadius: "8px", border: "1px solid #d1d5db", backgroundColor: "#ffffff", color: "#374151", fontWeight: 600, fontSize: "14px", cursor: "pointer" }}
             >
               Cancel
             </button>
             <button
               onClick={() => router.push("/step1")}
-              style={{ flex: 1, height: "44px", borderRadius: "8px", border: "none", backgroundColor: "#5F8D4E", color: "#ffffff", fontWeight: 600, fontSize: "14px", fontFamily: "Poppins, sans-serif", cursor: "pointer" }}
+              style={{ flex: 1, height: "44px", borderRadius: "8px", border: "none", backgroundColor: "#5F8D4E", color: "#ffffff", fontWeight: 600, fontSize: "14px", cursor: "pointer" }}
             >
               Agree and Continue
             </button>

@@ -3,7 +3,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation'
 import Link from "next/link";
 import Example from "@/components/navbar";
+import Stepper from "@/components/Stepper";
 import { useForm } from '../../context/context';
+import { API_BASE, RAZORPAY_KEY_ID } from "@/lib/config";
 
 export default function Step4() {
   const router = useRouter();
@@ -74,7 +76,7 @@ export default function Step4() {
     setIsProcessing(true);
 
     try {
-      const orderResponse = await fetch(`https://dermatology-backend-8xqf.onrender.com/api/create-payment`, {
+      const orderResponse = await fetch(`${API_BASE}/create-payment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -102,7 +104,7 @@ export default function Step4() {
       }
 
       const options = {
-        key: 'rzp_live_SUL8Trxygv1AJ0',
+        key: RAZORPAY_KEY_ID,
         amount: orderData.amount,
         currency: orderData.currency,
         name: 'DermaDrishti',
@@ -112,7 +114,7 @@ export default function Step4() {
         theme: { color: '#285430' },
         handler: async (response) => {
           try {
-            const verifyResponse = await fetch(`https://dermatology-backend-8xqf.onrender.com/api/verify-payment`, {
+            const verifyResponse = await fetch(`${API_BASE}/verify-payment`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -160,94 +162,69 @@ export default function Step4() {
         <Example />
       </div>
 
-      {/* PROGRESS STEPS */}
-      <div className="flex flex-row items-center justify-center mt-8 sm:mt-14 space-x-4">
-        <div className="hidden lg:flex flex-row items-center space-x-4">
-          <div className="text-gray-400 font-semibold text-2xl pr-20">
-            1 <span className="text-base">Basic Information</span>
-          </div>
-          <div className="text-gray-400 font-semibold text-2xl pr-20">
-            2 <span className="text-base">Upload Photos</span>
-          </div>
-          <div className="text-gray-400 font-semibold text-2xl pr-20">
-            3 <span className="text-base">Choose Region</span>
-          </div>
-          <div className="text-[#5F8D4E] border-b-4 border-[#5F8D4E] font-semibold text-2xl pr-20">
-            4 <span className="text-base">Payment</span>
-          </div>
-        </div>
-        <div className="lg:hidden">
-          <div className="text-[#5F8D4E] border-b-4 border-[#5F8D4E] font-semibold text-2xl">
-            4 <span className="text-base">Payment</span>
-          </div>
-        </div>
-      </div>
+      <Stepper current={4} />
 
       {/* FORM */}
-      <form onSubmit={submitForm} className="flex flex-col w-full max-w-xl mx-auto mt-4 sm:mt-6 text-black p-4 gap-2">
-        <span className="text-left text-xl sm:text-2xl lg:text-3xl font-medium font-poppins text-black my-4 sm:my-8">Payment</span>
+      <form onSubmit={submitForm} className="flex flex-col w-full max-w-xl mx-auto mt-4 sm:mt-6 text-black px-4 sm:px-6 pb-10 gap-5 sm:gap-6">
+        <h1 className="text-left text-xl sm:text-2xl lg:text-3xl font-medium text-black my-4 sm:my-8">Payment</h1>
 
-        <div className="w-full border border-gray-300 rounded-2xl shadow-lg p-6 sm:p-8">
-          <h2 className="text-lg sm:text-xl font-semibold mb-6 font-poppins">Pay Consultation Fee</h2>
+        <div className="surface p-6 sm:p-8">
+          <h2 className="text-lg sm:text-xl font-semibold mb-6">Pay Consultation Fee</h2>
 
           {error && (
-            <div className="text-red-500 text-sm font-poppins mb-4">{error}</div>
+            <div className="alert-error mb-5" role="alert">
+              <span>{error}</span>
+            </div>
           )}
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-poppins font-semibold mb-1">Name</label>
+              <label htmlFor="payer-name" className="field-label">Name</label>
               <input
+                id="payer-name"
                 type="text"
                 name="name"
+                placeholder="Full name"
                 value={payData.name}
                 onChange={handlePayChange}
                 required
-                className="w-full border border-gray-400 rounded h-10 sm:h-12 px-3 sm:px-4 text-sm sm:text-base font-poppins focus:outline-none focus:ring-2 focus:ring-[#5F8D4E] focus:border-transparent transition-all duration-200"
+                className="field-input"
                 disabled={isProcessing}
+                autoComplete="name"
               />
             </div>
             <div>
-              <label className="block text-sm font-poppins font-semibold mb-1">Email</label>
+              <label htmlFor="payer-email" className="field-label">Email</label>
               <input
+                id="payer-email"
                 type="email"
                 name="email"
+                placeholder="you@example.com"
                 value={payData.email}
                 onChange={handlePayChange}
                 required
-                className="w-full border border-gray-400 rounded h-10 sm:h-12 px-3 sm:px-4 text-sm sm:text-base font-poppins focus:outline-none focus:ring-2 focus:ring-[#5F8D4E] focus:border-transparent transition-all duration-200"
+                className="field-input"
                 disabled={isProcessing}
+                autoComplete="email"
               />
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={isProcessing}
-            className={`mt-6 w-full font-bold text-base sm:text-lg h-[45px] sm:h-[49px] rounded-[7px] font-poppins transform transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-300/50 bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] hover:from-[#4a7a3a] hover:to-[#3d6330] relative overflow-hidden group text-[#ffffff] ${
-              isProcessing ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          >
-            <span className="relative z-10 flex items-center justify-center gap-2">
-              {isProcessing && (
-                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              )}
-              {isProcessing ? 'Processing...' : 'Pay ₹299'}
-            </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-600/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+          <button type="submit" disabled={isProcessing} className="btn-primary w-full mt-6">
+            {isProcessing && (
+              <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            )}
+            {isProcessing ? 'Processing...' : 'Pay ₹299'}
           </button>
         </div>
 
         {/* Back button */}
-        <div className="flex justify-start mt-4">
+        <div className="flex justify-start">
           <Link href="/step3">
-            <button
-              type="button"
-              className="font-bold text-base sm:text-lg h-[45px] sm:h-[49px] rounded-[7px] px-4 sm:px-6 py-2.5 font-poppins border-2 border-[#5F8D4E] text-[#5F8D4E] hover:bg-[#5F8D4E] hover:text-white transition-all duration-300 min-w-[120px]"
-            >
+            <button type="button" className="btn-secondary min-w-[140px]">
               Back
             </button>
           </Link>

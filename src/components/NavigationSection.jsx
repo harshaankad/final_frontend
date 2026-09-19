@@ -24,12 +24,12 @@ import {
                 <NavigationMenuItem key={item.name}>
                   {item.isActive ? (
                     <div className="relative w-[173px] h-[60px] flex items-center justify-center bg-[url(/bg.svg)] bg-[100%_100%]">
-                      <span className="font-['Poppins-SemiBold',Helvetica] font-semibold text-green-dark text-base">
+                      <span className="font-semibold text-green-dark text-base">
                         {item.name}
                       </span>
                     </div>
                   ) : (
-                    <NavigationMenuLink className="font-['Poppins-SemiBold',Helvetica] font-semibold text-green-lite text-base">
+                    <NavigationMenuLink className="font-semibold text-green-lite text-base">
                       {item.name}
                     </NavigationMenuLink>
                   )}

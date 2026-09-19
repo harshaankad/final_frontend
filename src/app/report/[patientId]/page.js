@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Example from '@/components/navbar';
 import Spinner from '@/components/Spinner';
+import { API_BASE, API_ORIGIN } from "@/lib/config";
 
 export default function Report() {
   const { patientId } = useParams();
@@ -20,7 +21,7 @@ export default function Report() {
   const [downloadError, setDownloadError] = useState('');
   const reportRef = useRef(null);
 
-  const BASE_URL = 'https://dermatology-backend-8xqf.onrender.com/api';
+  const BASE_URL = API_BASE;
 
   const getAuthToken = () => {
     if (typeof window !== 'undefined') {
@@ -37,7 +38,7 @@ export default function Report() {
       return imagePath;
     }
     
-    const baseImageUrl = 'https://dermatology-backend-8xqf.onrender.com';
+    const baseImageUrl = API_ORIGIN;
     return `${baseImageUrl}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
   };
 
@@ -611,8 +612,8 @@ export default function Report() {
 
   const LoadingOverlay = () => (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
-      <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center space-y-4 max-w-sm mx-4">
-        <Spinner />
+      <div className="bg-white rounded-xl p-8 shadow-2xl flex flex-col items-center space-y-4 max-w-sm mx-4">
+        <div className="py-4"><Spinner color="#5F8D4E" /></div>
         <div className="text-lg font-semibold text-gray-800">Loading Report...</div>
         <div className="text-sm text-gray-600 text-center">
           Please wait while we fetch the patient data
@@ -693,13 +694,13 @@ export default function Report() {
     return (
       <div className="mt-8 space-y-8">
         <div className="border-t border-gray-300 pt-6">
-          <h3 className="text-lg sm:text-xl md:text-2xl font-bold underline text-center mb-8 font-poppins">
+          <h3 className="text-lg sm:text-xl font-semibold text-center mb-8 tracking-wide uppercase text-gray-800">
             Medical Images
           </h3>
           
           {hasNakedEyePhoto && (
             <div className="mb-8">
-              <h4 className="text-lg font-semibold mb-4 font-poppins text-gray-800">
+              <h4 className="text-base font-semibold mb-4 text-gray-700">
                 Clinical Image
               </h4>
               <div className="flex justify-center">
@@ -714,7 +715,7 @@ export default function Report() {
 
           {dermoscopePhotos.length > 0 && (
             <div className="mb-8">
-              <h4 className="text-lg font-semibold mb-4 font-poppins text-gray-800">
+              <h4 className="text-base font-semibold mb-4 text-gray-700">
                 Dermoscopic Image
               </h4>
               <div className="space-y-6">
@@ -743,14 +744,14 @@ export default function Report() {
 
   if (loading) {
     return (
-      <div className="bg-white w-full min-h-screen font-poppins flex flex-col items-center relative">
+      <div className="bg-white w-full min-h-screen flex flex-col items-center relative">
         <LoadingOverlay />
         
         <div className="w-full">
           <Example />
         </div>
         
-        <div className="w-full max-w-6xl border border-gray-200 my-6 md:my-10 mx-4 p-4 md:p-6 space-y-6 text-gray-800 opacity-30">
+        <div className="w-full max-w-6xl border border-gray-200 rounded-lg my-6 md:my-10 mx-4 p-4 md:p-6 space-y-6 text-gray-800 opacity-30">
           <HeaderSkeleton />
           <PatientInfoSkeleton />
           <div className="px-3 sm:px-4 space-y-3">
@@ -765,7 +766,7 @@ export default function Report() {
 
   if (error) {
     return (
-      <div className="bg-white w-full min-h-screen font-poppins flex flex-col items-center">
+      <div className="bg-white w-full min-h-screen flex flex-col items-center">
         <div className="w-full">
           <Example />
         </div>
@@ -779,7 +780,7 @@ export default function Report() {
             </div>
             <button
               onClick={() => router.push('/patients')}
-              className="font-bold text-base h-[45px] rounded-[7px] px-6 py-2.5 font-poppins border-2 border-[#5F8D4E] text-[#5F8D4E] hover:bg-[#5F8D4E] hover:text-white transition-all duration-300"
+              className="btn-secondary"
             >
               Back to Patients
             </button>
@@ -791,7 +792,7 @@ export default function Report() {
 
   if (!report) {
     return (
-      <div className="bg-white w-full min-h-screen font-poppins flex flex-col items-center">
+      <div className="bg-white w-full min-h-screen flex flex-col items-center">
         <div className="w-full">
           <Example />
         </div>
@@ -825,7 +826,7 @@ export default function Report() {
 
             <button
               onClick={() => router.push('/patients')}
-              className="mt-8 font-bold text-base h-[45px] rounded-[7px] px-6 py-2.5 font-poppins border-2 border-[#5F8D4E] text-[#5F8D4E] hover:bg-[#5F8D4E] hover:text-white transition-all duration-300"
+              className="btn-secondary mt-8"
             >
               Back to Patients
             </button>
@@ -836,7 +837,7 @@ export default function Report() {
   }
 
   return (
-    <div className="bg-white w-full font-poppins min-h-screen flex flex-col items-center">
+    <div className="bg-white w-full min-h-screen flex flex-col items-center">
       <div className="w-full">
         <Example />
       </div>
@@ -844,9 +845,9 @@ export default function Report() {
       {/* Download Error */}
       {downloadError && (
         <div className="w-full max-w-6xl px-4 mt-4">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between">
-            <p className="text-red-700 text-sm font-poppins">{downloadError}</p>
-            <button onClick={() => setDownloadError('')} className="text-red-400 hover:text-red-600 ml-4">
+          <div className="alert-error" role="alert">
+            <p>{downloadError}</p>
+            <button onClick={() => setDownloadError('')} className="text-red-500 hover:text-red-700" aria-label="Dismiss">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -860,9 +861,7 @@ export default function Report() {
         <button
           onClick={downloadWord}
           disabled={downloadingPDF}
-          className={`flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 ${
-            downloadingPDF ? 'opacity-50 cursor-not-allowed' : 'hover:from-[#4a7a3a] hover:to-[#3d6330]'
-          }`}
+          className="btn-primary h-11 sm:h-11 text-base sm:text-base"
         >
           {downloadingPDF ? (
             <>
@@ -886,27 +885,27 @@ export default function Report() {
       {/* Main report container */}
       <div 
         ref={reportRef}
-        className="w-full max-w-6xl border border-black my-6 md:my-10 mx-4 p-4 md:p-6 space-y-6 text-gray-800 animate-fade-in"
+        className="w-full max-w-6xl border border-gray-300 rounded-lg shadow-sm bg-white my-6 md:my-10 mx-4 p-4 md:p-6 space-y-6 text-gray-800 animate-fade-in"
       >
         {/* Header */}
         <div className="text-center space-y-2">
-          <h2 className="text-lg sm:text-xl md:text-2xl font-poppins font-bold">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold">
             DermaDrishti
           </h2>
-          <h3 className="text-sm sm:text-base font-semibold font-poppins">Dermoscopy Reporting Services</h3>
-          <p className="text-xs sm:text-sm font-medium font-poppins italic">By</p>
-          <p className="text-sm sm:text-base font-semibold font-poppins">Professor Balachandra S Ankad</p>
-          <p className="text-xs sm:text-sm font-medium font-poppins italic">Dermatologist and Dermatoscopist</p>
-          <p className="text-xs sm:text-sm font-poppins text-gray-600">drbsankad@gmail.com; 9980410056</p>
+          <h3 className="text-sm sm:text-base font-semibold">Dermoscopy Reporting Services</h3>
+          <p className="text-xs sm:text-sm font-medium italic">By</p>
+          <p className="text-sm sm:text-base font-semibold">Professor Balachandra S Ankad</p>
+          <p className="text-xs sm:text-sm font-medium italic">Dermatologist and Dermatoscopist</p>
+          <p className="text-xs sm:text-sm text-gray-600">drbsankad@gmail.com; 9980410056</p>
         </div>
 
         {/* Patient info grid */}
-        <div className="grid font-poppins grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 border border-black px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 border border-gray-800 rounded-md px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium">
           <p className="break-words">
             <strong>Name:</strong> {patient.firstname} {patient.lastname}
           </p>
           <p>
-            <strong>Age / Sex:</strong> {patient.age} / {patient.gender}
+            <strong>Age / Sex:</strong> {patient.age} / <span className="capitalize">{patient.gender}</span>
           </p>
           <p className="sm:col-span-2 lg:col-span-1">
             <strong>Date:</strong>{' '}
@@ -915,7 +914,7 @@ export default function Report() {
         </div>
 
         {/* Clinical details */}
-        <div className="px-3 sm:px-4 text-xs sm:text-sm space-y-2 font-poppins">
+        <div className="px-3 sm:px-4 text-xs sm:text-sm space-y-2">
           <p className="break-words">
             <strong>Site of lesion:</strong> {patient.siteOfInfection}
           </p>
@@ -928,16 +927,16 @@ export default function Report() {
         </div>
 
         {/* Dermoscopic findings - Full width */}
-        <div className="border border-black p-3 sm:p-4 space-y-2 sm:space-y-4 font-poppins">
-          <p className="font-semibold text-base sm:text-lg md:text-xl font-poppins mb-4 sm:mb-6">
+        <div className="border border-gray-800 rounded-md p-3 sm:p-4 space-y-2 sm:space-y-4">
+          <p className="font-semibold text-base sm:text-lg md:text-xl mb-4 sm:mb-6">
             Dermoscopic findings:
           </p>
           <p className="break-words leading-relaxed text-xs sm:text-sm">{report.dermoscopeFindings}</p>
         </div>
 
         {/* Final Impression - Separate section */}
-        <div className="border border-black p-3 sm:p-4 space-y-2 font-poppins">
-          <p className="font-semibold text-base sm:text-lg md:text-xl font-poppins mb-2">
+        <div className="border border-gray-800 rounded-md p-3 sm:p-4 space-y-2">
+          <p className="font-semibold text-base sm:text-lg md:text-xl mb-2">
             Final Impression:
           </p>
           <p className="break-words leading-relaxed text-xs sm:text-sm">{report.clinicalImpression}</p>
@@ -947,14 +946,14 @@ export default function Report() {
         {renderPhotoGallery()}
 
         {/* Signature */}
-        <div className="px-3 sm:px-4 flex flex-col items-end mt-6 font-poppins">
+        <div className="px-3 sm:px-4 flex flex-col items-end mt-6">
           <img src="/signature.png" alt="Signature" className="h-20 sm:h-24 object-contain mb-1" />
           <p className="text-xs sm:text-sm font-semibold">Professor Balachandra S Ankad</p>
           <p className="text-xs sm:text-sm italic text-gray-600">Dermatologist and Dermatoscopist</p>
         </div>
 
         {/* Disclaimer Notes */}
-        <div className="border border-black p-3 sm:p-4 mt-6 font-poppins">
+        <div className="border border-gray-800 rounded-md p-3 sm:p-4 mt-6">
           <p className="font-semibold text-base sm:text-lg md:text-xl mb-3">Disclaimer Notes</p>
           <ol className="list-decimal pl-5 sm:pl-6 space-y-3 text-xs sm:text-sm leading-relaxed text-justify">
             <li>

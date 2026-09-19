@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useForm } from '../../context/context';
 import Example from "@/components/navbar";
+import Stepper from "@/components/Stepper";
 
 export default function Step1() {
   const [attempted, setAttempted] = useState(false);
@@ -75,86 +76,49 @@ export default function Step1() {
         <Example />
       </div>
 
-      {/* PROGRESS STEPS */}
-      <div className="flex flex-row items-center justify-center mt-8 sm:mt-14 space-x-4">
-        <div className="hidden lg:flex flex-row items-center space-x-4">
-          <div className="text-[#5F8D4E] border-b-4 border-[#5F8D4E] font-semibold text-2xl pr-20">
-            1 <span className="text-base">Basic Information</span>
-          </div>
-          <div className="text-gray-400 font-semibold text-2xl pr-20">
-            2 <span className="text-base">Upload Photos</span>
-          </div>
-          <div className="text-gray-400 font-semibold text-2xl pr-20">
-            3 <span className="text-base">Choose Region</span>
-          </div>
-          <div className="text-gray-400 font-semibold text-2xl pr-20">
-            4 <span className="text-base">Payment</span>
-          </div>
-        </div>
-
-        <div className="lg:hidden">
-          <div className="text-[#5F8D4E] border-b-4 border-[#5F8D4E] font-semibold text-2xl">
-            1 <span className="text-base">Basic Information</span>
-          </div>
-        </div>
-      </div>
+      <Stepper current={1} />
 
       {/* FORM */}
-      <form className="flex flex-col w-full max-w-4xl mx-auto mt-4 sm:mt-6 text-black p-4 sm:p-6 gap-4 sm:gap-6">
-        <span className="text-left text-xl sm:text-2xl lg:text-3xl font-medium font-poppins text-black my-4 sm:my-8">
+      <form className="flex flex-col w-full max-w-4xl mx-auto mt-4 sm:mt-6 text-black px-4 sm:px-6 pb-10 gap-5 sm:gap-6">
+        <h1 className="text-left text-xl sm:text-2xl lg:text-3xl font-medium text-black my-4 sm:my-8">
           Basic Information
-        </span>
+        </h1>
 
         {/* Name Fields */}
-        <div className="w-full flex flex-col sm:flex-row gap-4 sm:gap-6">
+        <div className="w-full flex flex-col sm:flex-row gap-5 sm:gap-6">
           <div className="flex flex-col flex-1">
-            <label
-              htmlFor="firstName"
-              className="text-sm sm:text-base font-poppins font-semibold text-black mb-1 sm:mb-2"
-            >
-              First Name *
-            </label>
+            <label htmlFor="firstName" className="field-label">First Name *</label>
             <input
               type="text"
               id="firstName"
               name="First-Name"
-              placeholder="Enter your first name"
+              placeholder="Enter first name"
               value={firstName}
               onChange={handleChange}
-              className="border border-gray-400 rounded h-10 sm:h-12 px-3 sm:px-4 font-poppins text-sm sm:text-base focus:border-[#5F8D4E] focus:outline-none focus:ring-2 focus:ring-[#5F8D4E]/20 transition-all duration-200"
+              className="field-input"
               required
             />
           </div>
 
           <div className="flex flex-col flex-1">
-            <label
-              htmlFor="lastName"
-              className="text-sm sm:text-base font-poppins font-semibold text-black mb-1 sm:mb-2"
-            >
-              Last Name *
-            </label>
+            <label htmlFor="lastName" className="field-label">Last Name *</label>
             <input
               type="text"
               id="lastName"
               name="Last-Name"
-              placeholder="Enter your last name"
+              placeholder="Enter last name"
               value={lastName}
               onChange={handleChange}
-              className="border border-gray-400 rounded h-10 sm:h-12 px-3 sm:px-4 font-poppins text-sm sm:text-base focus:border-[#5F8D4E] focus:outline-none focus:ring-2 focus:ring-[#5F8D4E]/20 transition-all duration-200"
+              className="field-input"
               required
             />
           </div>
         </div>
 
         {/* Age and Gender Fields */}
-        <div className="w-full flex flex-col sm:flex-row gap-4 sm:gap-6">
+        <div className="w-full flex flex-col sm:flex-row gap-5 sm:gap-6">
           <div className="flex flex-col flex-1">
-            <label
-              htmlFor="age"
-              className="text-sm sm:text-base font-poppins font-semibold text-black mb-1 sm:mb-2"
-            >
-              Age *
-            </label>
+            <label htmlFor="age" className="field-label">Age *</label>
             <input
               type="text"
               inputMode="numeric"
@@ -163,27 +127,22 @@ export default function Step1() {
               placeholder="Enter age"
               value={age}
               onChange={handleChange}
-              className="border border-gray-400 rounded h-10 sm:h-12 px-3 sm:px-4 font-poppins text-sm sm:text-base focus:border-[#5F8D4E] focus:outline-none focus:ring-2 focus:ring-[#5F8D4E]/20 transition-all duration-200"
+              className="field-input"
               required
             />
           </div>
 
           <div className="flex flex-col flex-1">
-            <label
-              htmlFor="gender"
-              className="text-sm sm:text-base font-poppins font-semibold text-black mb-1 sm:mb-2"
-            >
-              Gender *
-            </label>
+            <label htmlFor="gender" className="field-label">Gender *</label>
             <select
               id="gender"
               name="gender"
               value={gender}
               onChange={handleChange}
-              className="border border-gray-400 rounded h-10 sm:h-12 px-3 sm:px-4 font-poppins text-sm sm:text-base focus:border-[#5F8D4E] focus:outline-none focus:ring-2 focus:ring-[#5F8D4E]/20 transition-all duration-200 bg-white"
+              className="field-input"
               required
             >
-              <option value="">Select Gender</option>
+              <option value="">Select gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
               <option value="other">Other</option>
@@ -192,14 +151,9 @@ export default function Step1() {
         </div>
 
         {/* Duration and Previous Treatment Fields */}
-        <div className="w-full flex flex-col sm:flex-row gap-4 sm:gap-6">
+        <div className="w-full flex flex-col sm:flex-row gap-5 sm:gap-6">
           <div className="flex flex-col flex-1">
-            <label
-              htmlFor="duration"
-              className="text-sm sm:text-base font-poppins font-semibold text-black mb-1 sm:mb-2"
-            >
-              Duration *
-            </label>
+            <label htmlFor="duration" className="field-label">Duration *</label>
             <input
               type="text"
               id="duration"
@@ -207,18 +161,13 @@ export default function Step1() {
               placeholder="e.g., 2 weeks, 1 month"
               value={duration}
               onChange={handleChange}
-              className="border border-gray-400 rounded h-10 sm:h-12 px-3 sm:px-4 font-poppins text-sm sm:text-base focus:border-[#5F8D4E] focus:outline-none focus:ring-2 focus:ring-[#5F8D4E]/20 transition-all duration-200"
+              className="field-input"
               required
             />
           </div>
 
           <div className="flex flex-col flex-1">
-            <label
-              htmlFor="previousTreatment"
-              className="text-sm sm:text-base font-poppins font-semibold text-black mb-1 sm:mb-2"
-            >
-              Previous Treatment *
-            </label>
+            <label htmlFor="previousTreatment" className="field-label">Previous Treatment *</label>
             <input
               type="text"
               id="previousTreatment"
@@ -226,7 +175,7 @@ export default function Step1() {
               placeholder="Describe any previous treatments"
               value={previousTreatment}
               onChange={handleChange}
-              className="border border-gray-400 rounded h-10 sm:h-12 px-3 sm:px-4 font-poppins text-sm sm:text-base focus:border-[#5F8D4E] focus:outline-none focus:ring-2 focus:ring-[#5F8D4E]/20 transition-all duration-200"
+              className="field-input"
               required
             />
           </div>
@@ -234,12 +183,7 @@ export default function Step1() {
 
         {/* Clinical Impression */}
         <div className="w-full flex flex-col">
-          <label
-            htmlFor="clinicalImpression"
-            className="text-sm sm:text-base font-poppins font-semibold text-black mb-1 sm:mb-2"
-          >
-            Clinical Impression *
-          </label>
+          <label htmlFor="clinicalImpression" className="field-label">Clinical Impression *</label>
           <textarea
             id="clinicalImpression"
             name="clinicalImpression"
@@ -247,35 +191,31 @@ export default function Step1() {
             value={clinicalImpression}
             onChange={handleChange}
             rows={3}
-            className="border border-gray-400 rounded px-3 sm:px-4 py-2 sm:py-3 font-poppins text-sm sm:text-base focus:border-[#5F8D4E] focus:outline-none focus:ring-2 focus:ring-[#5F8D4E]/20 transition-all duration-200 resize-none"
+            className="field-textarea"
             required
           />
         </div>
 
         {/* Validation Message - only after user tries to proceed */}
         {attempted && !isFormValid() && (
-          <div className="text-red-500 text-sm font-poppins mt-2">
-            * Please fill in all required fields to continue.
+          <div className="alert-error" role="alert">
+            <span>Please fill in all required fields to continue.</span>
           </div>
         )}
 
         {/* Next Button */}
-        <div className="flex flex-row justify-center sm:justify-end items-center mt-4 sm:mt-6">
+        <div className="flex flex-row justify-center sm:justify-end items-center mt-2 sm:mt-4">
           {isFormValid() ? (
             <Link href="/step2" className="w-full sm:w-auto">
-              <button
-                type="button"
-                className="w-full sm:w-auto font-bold text-base sm:text-lg md:text-xl h-[45px] sm:h-[49px] rounded-[7px] px-4 sm:px-6 py-2.5 font-poppins transform transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-300/50 min-w-[120px] bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] hover:from-[#4a7a3a] hover:to-[#3d6330] relative overflow-hidden group text-[#ffffff]"
-              >
-                <span className="relative z-10">Next Step</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-600/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+              <button type="button" className="btn-primary w-full sm:w-auto sm:min-w-[160px]">
+                Next Step
               </button>
             </Link>
           ) : (
             <button
               type="button"
               onClick={() => setAttempted(true)}
-              className="w-full sm:w-auto font-bold text-base sm:text-lg md:text-xl h-[45px] sm:h-[49px] rounded-[7px] px-4 sm:px-6 py-2.5 font-poppins min-w-[120px] bg-gray-400 text-gray-600 cursor-not-allowed opacity-50"
+              className="btn-muted w-full sm:w-auto sm:min-w-[160px]"
             >
               Next Step
             </button>

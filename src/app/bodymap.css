@@ -1,0 +1,59 @@
+/*
+ * Styles for the interactive body-region picker (Step 3).
+ * Replaces the third-party design-system stylesheet that used to be imported
+ * wholesale (variables.css / menbody.css / App.css / HumanBody.css) and which
+ * also set html { overflow: hidden }, a grey body background and Roboto globally.
+ */
+
+:root {
+  --bodymap-outline: #3d6330;            /* figure outline           */
+  --bodymap-region-idle: #eef5eb;        /* mobile: faint region fill */
+  --bodymap-region-hover: #cfe3c8;       /* hover                     */
+  --bodymap-region-selected: #a8d5a2;    /* selected                  */
+  --bodymap-region-selected-hover: #8bc486;
+}
+
+.bodymap {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+}
+
+.sc-body-model-svg {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 260px;
+  height: auto;
+}
+
+.sc-body-model-svg__path {
+  fill: var(--bodymap-region-idle);
+  cursor: pointer;
+  user-select: none;
+  transition: fill 120ms ease;
+}
+
+@media (min-width: 768px) {
+  .sc-body-model-svg__path {
+    fill: transparent;
+  }
+}
+
+.sc-body-model-svg__path:hover {
+  fill: var(--bodymap-region-hover);
+}
+
+.sc-body-model-svg__stroke {
+  fill: var(--bodymap-outline);
+  pointer-events: none;
+}
+
+/* The SVG components set fill="#5F8D4E" on selected regions. */
+.sc-body-model-svg__path[fill="#5F8D4E"] {
+  fill: var(--bodymap-region-selected) !important;
+}
+.sc-body-model-svg__path[fill="#5F8D4E"]:hover {
+  fill: var(--bodymap-region-selected-hover) !important;
+}

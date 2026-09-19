@@ -1,6 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { ZoomIn, ZoomOut } from 'lucide-react';
+
+const ZOOM_STEP = 1.25;
 
 export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }) {
   const canvasRef = useRef(null);
@@ -13,8 +16,61 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
   const [shapes, setShapes] = useState([]);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageDimensions, setImageDimensions] = useState({ width: 400, height: 400 });
+
+  // The canvas is always full resolution; displayScale only changes how large it is
+  // shown on screen. "fit" is the scale that shows the whole image inside the box.
   const [displayScale, setDisplayScale] = useState(1);
+  const [fitScale, setFitScale] = useState(1);
+  const [zoomMode, setZoomMode] = useState('fit'); // 'fit' | 'custom'
   const containerRef = useRef(null);
+  const scaleRef = useRef(1);
+  const fitRef = useRef(1);
+  // Point (in image pixels) that should stay under a given box-relative point after a zoom.
+  const anchorRef = useRef(null);
+
+  const computeFitScale = (w, h) => {
+    const box = containerRef.current;
+    const parentWidth = box?.parentElement?.clientWidth || window.innerWidth - 64;
+    const maxW = parentWidth - 32 - 4; // parent padding + box border
+    const maxH = window.innerHeight * 0.75;
+    return Math.min(1, maxW / w, maxH / h);
+  };
+
+  const minScale = () => fitRef.current;
+  const maxScale = () => Math.max(1, fitRef.current);
+
+  // Zoom so that image point (ix, iy) stays at box-relative screen point (px, py).
+  const zoomTo = (nextScale, anchor) => {
+    const next = Math.min(maxScale(), Math.max(minScale(), nextScale));
+    if (Math.abs(next - scaleRef.current) < 1e-4) return;
+    const box = containerRef.current;
+    if (box) {
+      const px = anchor?.px ?? box.clientWidth / 2;
+      const py = anchor?.py ?? box.clientHeight / 2;
+      const ix = anchor?.ix ?? (box.scrollLeft + px) / scaleRef.current;
+      const iy = anchor?.iy ?? (box.scrollTop + py) / scaleRef.current;
+      anchorRef.current = { ix, iy, px, py };
+    }
+    setZoomMode(Math.abs(next - fitRef.current) < 1e-4 ? 'fit' : 'custom');
+    setDisplayScale(next);
+  };
+
+  const zoomBy = (factor) => zoomTo(scaleRef.current * factor);
+  const zoomFit = () => zoomTo(fitRef.current);
+  const zoomNative = () => zoomTo(1);
+
+  useEffect(() => { scaleRef.current = displayScale; }, [displayScale]);
+  useEffect(() => { fitRef.current = fitScale; }, [fitScale]);
+
+  // After the canvas re-renders at the new size, restore the anchored point.
+  useLayoutEffect(() => {
+    const box = containerRef.current;
+    const a = anchorRef.current;
+    if (!box || !a) return;
+    box.scrollLeft = a.ix * displayScale - a.px;
+    box.scrollTop = a.iy * displayScale - a.py;
+    anchorRef.current = null;
+  }, [displayScale]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -33,11 +89,11 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
       setImageLoaded(true);
       ctx.drawImage(img, 0, 0, naturalWidth, naturalHeight);
 
-      // Calculate scale to fit within viewport
-      const maxW = Math.min(window.innerWidth - 64, 900);
-      const maxH = window.innerHeight * 0.7;
-      const scale = Math.min(1, maxW / naturalWidth, maxH / naturalHeight);
-      setDisplayScale(scale);
+      const fit = computeFitScale(naturalWidth, naturalHeight);
+      fitRef.current = fit;
+      setFitScale(fit);
+      setDisplayScale(fit);
+      setZoomMode('fit');
     };
 
     img.onerror = (error) => {
@@ -48,18 +104,38 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
     img.src = imageUrl;
   }, [imageUrl]);
 
-  // Recalculate scale on window resize
+  // Keep "fit" in sync with the window; a custom zoom level is left alone.
   useEffect(() => {
     if (!imageLoaded) return;
     const handleResize = () => {
-      const maxW = Math.min(window.innerWidth - 64, 900);
-      const maxH = window.innerHeight * 0.7;
-      const scale = Math.min(1, maxW / imageDimensions.width, maxH / imageDimensions.height);
-      setDisplayScale(scale);
+      const fit = computeFitScale(imageDimensions.width, imageDimensions.height);
+      fitRef.current = fit;
+      setFitScale(fit);
+      if (zoomMode === 'fit') setDisplayScale(fit);
+      else if (scaleRef.current < fit) setDisplayScale(fit);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [imageLoaded, imageDimensions]);
+  }, [imageLoaded, imageDimensions, zoomMode]);
+
+  // Ctrl / Cmd + scroll-wheel zooms around the cursor. Registered manually because
+  // React's onWheel is passive and cannot call preventDefault().
+  useEffect(() => {
+    const box = containerRef.current;
+    if (!box) return;
+    const onWheel = (e) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      e.preventDefault();
+      const rect = box.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      const ix = (box.scrollLeft + px) / scaleRef.current;
+      const iy = (box.scrollTop + py) / scaleRef.current;
+      zoomTo(scaleRef.current * (e.deltaY < 0 ? 1.1 : 1 / 1.1), { ix, iy, px, py });
+    };
+    box.addEventListener('wheel', onWheel, { passive: false });
+    return () => box.removeEventListener('wheel', onWheel);
+  }, [imageLoaded]);
 
   const drawArrow = (ctx, fromX, fromY, toX, toY, color) => {
     const headLength = 35;
@@ -216,10 +292,25 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
     );
   }
 
+  const zoomPct = Math.round(displayScale * 100);
+  const atMin = displayScale <= minScale() + 1e-4;
+  const atMax = displayScale >= maxScale() - 1e-4;
+  const isNative = Math.abs(displayScale - 1) < 1e-4;
+  const iconBtn =
+    'inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-700 transition-colors hover:bg-gray-100 ' +
+    'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5F8D4E]/40 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent';
+  const textBtn = (active) =>
+    'inline-flex h-8 items-center rounded-md px-2.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5F8D4E]/40 ' +
+    (active ? 'bg-[#F4FFF3] text-[#5F8D4E]' : 'text-gray-700 hover:bg-gray-100');
+
   return (
     <div className="max-w-full w-full mx-auto">
       <div className="flex flex-col items-center gap-4 p-4">
-        <div ref={containerRef} className="max-w-full border-2 border-gray-300 bg-white" style={{ overflow: 'hidden' }}>
+        <div
+          ref={containerRef}
+          className="max-w-full border-2 border-gray-300 bg-white"
+          style={{ overflow: 'auto', maxHeight: '80vh' }}
+        >
           <canvas
             ref={canvasRef}
             width={imageDimensions.width}
@@ -236,47 +327,63 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
           />
         </div>
 
-        <div className="flex flex-wrap justify-center gap-4 items-center max-w-full">
-          <div className="flex items-center gap-2">
-            <label className="text-lg text-[#242424] font-medium">Color:</label>
+        <div className="flex flex-wrap justify-center gap-3 sm:gap-4 items-center max-w-full">
+          {/* Zoom */}
+          <div className="flex items-center gap-0.5 rounded-lg border border-gray-300 bg-white p-1" role="group" aria-label="Zoom">
+            <button type="button" onClick={() => zoomBy(1 / ZOOM_STEP)} disabled={!imageLoaded || atMin} className={iconBtn} aria-label="Zoom out" title="Zoom out">
+              <ZoomOut size={16} />
+            </button>
+            <span className="min-w-[3.25rem] text-center text-sm font-medium tabular-nums text-gray-700">{zoomPct}%</span>
+            <button type="button" onClick={() => zoomBy(ZOOM_STEP)} disabled={!imageLoaded || atMax} className={iconBtn} aria-label="Zoom in" title="Zoom in">
+              <ZoomIn size={16} />
+            </button>
+            <span className="mx-1 h-5 w-px bg-gray-200" aria-hidden="true" />
+            <button type="button" onClick={zoomFit} disabled={!imageLoaded} className={textBtn(zoomMode === 'fit')} title="Fit whole image in view">
+              Fit
+            </button>
+            <button type="button" onClick={zoomNative} disabled={!imageLoaded} className={textBtn(isNative)} title="Show at original size">
+              100%
+            </button>
+          </div>
+
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            Color
             <input
               type="color"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              className="w-10 h-10 border rounded cursor-pointer"
+              className="h-10 w-10 rounded-md border border-gray-300 bg-white p-0.5 cursor-pointer"
+              aria-label="Annotation colour"
             />
-          </div>
+          </label>
 
-          <div className="flex items-center gap-2 text-[#242424]">
-            <label className="text-lg font-medium text-[#242424]">Tool:</label>
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            Tool
             <select
               value={selectedTool}
               onChange={(e) => setSelectedTool(e.target.value)}
-              className="px-3 py-2 border rounded"
+              className="field-input h-10 sm:h-10 w-auto pr-8 text-sm sm:text-sm"
             >
               <option value="circle">Circle</option>
               <option value="arrow">Arrow</option>
             </select>
-          </div>
+          </label>
 
           <button
+            type="button"
             onClick={clearCanvas}
-            className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-[#EAFFF0] to-[#E0F9E6] text-[#242424] font-semibold text-base border-2 border-black rounded-[6px] transform transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-green-300/50 hover:border-black hover:bg-gradient-to-r hover:from-green-50 hover:to-green-100 min-w-[100px] h-[42px] relative overflow-hidden group"
+            className="btn-secondary h-10 sm:h-10 px-4 text-sm sm:text-sm min-w-[90px]"
           >
-            <span className="relative z-10">Undo</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-green-200/30 to-emerald-200/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+            Undo
           </button>
 
           <button
+            type="button"
             onClick={saveEditedImage}
             disabled={!imageLoaded}
-            className={`w-full sm:w-auto font-semibold text-base sm:text-lg h-[40px] sm:h-[42px] rounded-[6px] px-4 py-2 transform transition-all duration-300 min-w-[100px] relative overflow-hidden group
-            ${imageLoaded ? 'bg-gradient-to-r from-[#5F8D4E] to-[#4a7a3a] hover:from-[#4a7a3a] hover:to-[#3d6330] hover:scale-105 hover:shadow-xl hover:shadow-green-300/50' : 'bg-gray-400 cursor-not-allowed'}`}
+            className="btn-primary h-10 sm:h-10 px-5 text-sm sm:text-sm min-w-[90px]"
           >
-            <span className="relative z-10">Save</span>
-            {imageLoaded && (
-              <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-green-600/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-            )}
+            Save
           </button>
         </div>
 
@@ -288,14 +395,17 @@ export default function ImageEditor({ imageUrl, onEditComplete, downloadButton }
         )}
 
         {!imageLoaded && imageUrl && (
-          <div className="text-center text-gray-500">
+          <div className="text-center text-gray-500 text-sm">
             <p>Loading image...</p>
           </div>
         )}
 
         {imageLoaded && (
-          <div className="text-center text-gray-600 text-sm">
-            <p>Image dimensions: {imageDimensions.width} × {imageDimensions.height}</p>
+          <div className="text-center text-gray-500 text-xs">
+            <p>
+              Image dimensions: {imageDimensions.width} × {imageDimensions.height}
+              <span className="hidden sm:inline"> · Hold Ctrl / ⌘ and scroll to zoom</span>
+            </p>
           </div>
         )}
       </div>
