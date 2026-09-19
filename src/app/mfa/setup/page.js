@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import Spinner from "@/components/Spinner";
 import CodeInput from "@/components/CodeInput";
 import { API_BASE } from "@/lib/config";
-import { getMfaToken, getToken, setSession, clearSession } from "@/lib/auth";
+import { getToken, setSession, clearSession } from "@/lib/auth";
 
-// Authenticator enrolment. Reached either right after login (account has no
-// MFA yet — mfaToken) or from a logged-in session to move to a new phone.
+// Authenticator enrolment for a logged-in doctor: turning MFA on for the
+// first time (from the post-login prompt) or moving to a new phone.
 export default function MfaSetup() {
   const router = useRouter();
   const [setup, setSetup] = useState(null); // { qrDataUrl, manualKey, account }
@@ -19,7 +19,7 @@ export default function MfaSetup() {
   const [loading, setLoading] = useState(true);
   const [showKey, setShowKey] = useState(false);
 
-  const bearer = () => getMfaToken() || getToken();
+  const bearer = () => getToken();
   // Each call to /mfa/setup mints a new secret; guard against React Strict
   // Mode's double effect in dev so the QR shown matches the pending secret.
   const started = useRef(false);
@@ -130,8 +130,8 @@ export default function MfaSetup() {
               Set up your authenticator
             </span>
             <span className="font-normal text-gray-600 text-center text-sm sm:text-base max-w-md px-2">
-              Patient data on DermaDrishti is protected with two-step verification. Scan this code with
-              Google Authenticator, Microsoft Authenticator, Authy or any TOTP app, then enter the 6-digit code it shows.
+              Scan this code with Google Authenticator, Microsoft Authenticator, Authy or any TOTP app,
+              then enter the 6-digit code it shows to switch on two-step verification.
             </span>
 
             {error && !setup && (
@@ -173,10 +173,10 @@ export default function MfaSetup() {
 
                 <button
                   type="button"
-                  onClick={() => { clearSession(); router.push("/login"); }}
+                  onClick={() => router.push("/patients")}
                   className="text-sm text-gray-500 hover:text-gray-700"
                 >
-                  Cancel and log out
+                  Not now
                 </button>
               </form>
             )}

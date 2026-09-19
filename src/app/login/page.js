@@ -3,8 +3,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Spinner from "@/components/Spinner";
+import MfaPromptModal from "@/components/MfaPromptModal";
 import { API_BASE } from "@/lib/config";
-import { setMfaToken, clearSession } from "@/lib/auth";
+import { setMfaToken, setSession, clearSession } from "@/lib/auth";
 
 export default function Login() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showMfaPrompt, setShowMfaPrompt] = useState(false);
 
   const submitForm = async (e) => {
     e.preventDefault();
@@ -42,11 +44,22 @@ export default function Login() {
         return;
       }
 
-      // Password is only step 1: the server hands back a short-lived MFA
-      // token and the session is issued after the authenticator code.
       clearSession();
-      setMfaToken(data.mfaToken);
-      router.push(data.mfaSetupRequired ? "/mfa/setup" : "/mfa");
+
+      if (data.mfaRequired) {
+        // Two-step verification is on: the session is issued after the code.
+        setMfaToken(data.mfaToken);
+        router.push("/mfa");
+        return;
+      }
+
+      // Logged in. MFA is off for this account, so nudge before continuing.
+      setSession(data.token, data.doctor);
+      if (data.mfaPrompt) {
+        setShowMfaPrompt(true);
+        return;
+      }
+      router.push("/patients");
     } catch (err) {
       setError("Something went wrong. Please try again.");
       console.error("Login error:", err);
@@ -143,6 +156,12 @@ export default function Login() {
           <Spinner />
         </div>
       )}
+
+      <MfaPromptModal
+        open={showMfaPrompt}
+        onActivate={() => router.push("/mfa/setup")}
+        onSkip={() => router.push("/patients")}
+      />
     </div>
   );
 }
