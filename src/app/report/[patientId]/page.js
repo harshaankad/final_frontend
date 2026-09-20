@@ -141,6 +141,13 @@ export default function Report() {
     setDownloadingPDF(true);
     
     try {
+      // Re-fetch so the signed image URLs are fresh even if the page has been
+      // open for a while. Shadows the state values for the rest of this call.
+      const fresh = await fetchPatientData();
+      if (!fresh) return;
+      const patient = fresh.patient;
+      const report = fresh.report;
+
       // Dynamically import libraries
       const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, ImageRun } = await import('docx');
 
@@ -537,41 +544,38 @@ export default function Report() {
     }
   };
 
-  useEffect(() => {
-    const fetchPatientData = async () => {
-      const token = getAuthToken();
-      if (!token) {
-        router.push('/login');
-        return;
-      }
-
-      try {
-        const res = await fetch(`${BASE_URL}/patient-details/${patientId}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.message || 'Failed to fetch data');
-        }
-
-        setPatient(data.data.patient);
-        setReport(data.data.report);
-        
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (patientId) {
-      fetchPatientData();
+  // Image links in the response are signed and expire after ~30 minutes, so
+  // this is also called again right before exporting.
+  const fetchPatientData = async () => {
+    const token = getAuthToken();
+    if (!token) {
+      router.push('/login');
+      return null;
     }
+
+    const res = await fetch(`${BASE_URL}/patient-details/${patientId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || 'Failed to fetch data');
+    }
+
+    setPatient(data.data.patient);
+    setReport(data.data.report);
+    return data.data;
+  };
+
+  useEffect(() => {
+    if (!patientId) return;
+    fetchPatientData()
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
   }, [patientId]);
 
   useEffect(() => {

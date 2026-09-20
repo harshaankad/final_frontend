@@ -19,7 +19,8 @@ const nextConfig = {
       "localhost",
       "www.azuki.com",
       "img.freepik.com",
-      "res.cloudinary.com", // ✅ Added Cloudinary domain
+      "res.cloudinary.com", // legacy public patient photos (until migrated) + marketing
+      "api.cloudinary.com", // signed, expiring patient photo URLs
     ],
   },
   async headers() {

@@ -22,9 +22,17 @@ export default function Step2() {
     dermoscopePreviews, setDermoscopePreviews,
   } = useForm();
 
+  // The server re-checks the real file type; this just gives a quick,
+  // friendly message for obvious mismatches.
+  const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+
   const validateFileSize = (file) => {
     if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
       setError(`"${file.name}" exceeds ${MAX_FILE_SIZE_MB}MB limit.`);
+      return false;
+    }
+    if (file.type && !ACCEPTED_TYPES.includes(file.type)) {
+      setError(`"${file.name}" is not a supported image. Please use a JPEG, PNG or WebP photo.`);
       return false;
     }
     return true;
@@ -133,7 +141,7 @@ export default function Step2() {
               </span>
               <input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
                 onChange={(e) => handleFileChange(e, 'naked')}
                 className="block w-full max-w-md text-sm text-gray-600 rounded-lg border border-dashed border-gray-300 bg-gray-50 p-2.5 transition-colors duration-150 hover:border-[#5F8D4E]/60 focus:outline-none focus:border-[#5F8D4E] focus:ring-2 focus:ring-[#5F8D4E]/20 file:mr-4 file:h-9 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#5F8D4E] file:text-white file:cursor-pointer hover:file:bg-[#4a7a3a] file:transition-colors"
               />
@@ -175,7 +183,7 @@ export default function Step2() {
               </span>
               <input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
                 multiple
                 onChange={(e) => handleFileChange(e, 'dermoscope')}
                 className="block w-full max-w-md text-sm text-gray-600 rounded-lg border border-dashed border-gray-300 bg-gray-50 p-2.5 transition-colors duration-150 hover:border-[#5F8D4E]/60 focus:outline-none focus:border-[#5F8D4E] focus:ring-2 focus:ring-[#5F8D4E]/20 file:mr-4 file:h-9 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#5F8D4E] file:text-white file:cursor-pointer hover:file:bg-[#4a7a3a] file:transition-colors"
