@@ -16,8 +16,14 @@ const navigation = [
   { name: 'Patients', href: '/patients' },
 ];
 
+// Shown to any signed-in doctor.
+const accountNavigation = [{ name: 'Security', href: '/account/security' }];
+
 // Admin-only links; shown once the stored profile says role === 'admin'.
-const adminNavigation = [{ name: 'Analytics', href: '/analytics' }];
+const adminNavigation = [
+  { name: 'Analytics', href: '/analytics' },
+  { name: 'Audit log', href: '/admin/audit' },
+];
 
 export default function Navbar() {
   const router = useRouter();
@@ -31,7 +37,11 @@ export default function Navbar() {
     setIsAdmin(hasAdminRole());
   }, []);
 
-  const links = isAdmin ? [...navigation, ...adminNavigation] : navigation;
+  const links = [
+    ...navigation,
+    ...(isAdmin ? adminNavigation : []),
+    ...(isLoggedIn ? accountNavigation : []),
+  ];
 
   // Revokes the token on the server (all devices), then clears local state.
   const handleLogout = async () => {

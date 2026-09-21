@@ -13,6 +13,7 @@ export default function Step3() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [attempted, setAttempted] = useState(false);
+  const [consent, setConsent] = useState(false);
 
   const {
     firstName,
@@ -73,6 +74,8 @@ export default function Step3() {
     formData.append("previousTreatment", previousTreatment);
     formData.append("clinicalImpression", clinicalImpression);
     formData.append("siteOfInfection", siteOfInfection.join(", "));
+    // Recorded server-side with a timestamp and the consent text version.
+    formData.append("consent", consent ? "true" : "false");
     formData.append("nakedEyePhoto", nakedEyePhoto);
 
     dermoscopePhotos.forEach((photo) => {
@@ -107,7 +110,7 @@ export default function Step3() {
   const canSubmit = () => {
     return firstName && lastName && age && gender && duration &&
            previousTreatment && nakedEyePhoto && dermoscopePhotos &&
-           dermoscopePhotos.length > 0 && siteOfInfection.length > 0;
+           dermoscopePhotos.length > 0 && siteOfInfection.length > 0 && consent;
   };
 
   const handleSiteSelection = (site) => {
@@ -165,6 +168,28 @@ export default function Step3() {
         {attempted && siteOfInfection.length === 0 && (
           <div className="alert-error" role="alert">
             <span>Please select the site of infection to continue.</span>
+          </div>
+        )}
+
+        {/* Patient consent (DPDP) */}
+        <label className={`surface p-4 sm:p-5 flex items-start gap-3 cursor-pointer transition-colors ${attempted && !consent ? 'border-red-300 bg-red-50/40' : ''}`}>
+          <input
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            className="mt-1 h-4 w-4 shrink-0 accent-[#285430]"
+            required
+          />
+          <span className="text-sm text-gray-700 leading-relaxed">
+            I confirm that the patient (or their guardian) has given informed consent for these clinical
+            photographs and details to be uploaded to DermaDrishti for dermoscopy reporting, has been told
+            they are stored securely and can be deleted on request, and has been shown our{" "}
+            <Link href="/privacy" target="_blank" className="link-brand">privacy notice</Link>.
+          </span>
+        </label>
+        {attempted && !consent && (
+          <div className="alert-error" role="alert">
+            <span>Please confirm patient consent to continue.</span>
           </div>
         )}
 

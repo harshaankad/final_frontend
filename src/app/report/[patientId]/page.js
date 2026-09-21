@@ -6,7 +6,8 @@ import Image from 'next/image';
 import Example from '@/components/navbar';
 import Spinner from '@/components/Spinner';
 import { API_ORIGIN } from "@/lib/config";
-import { apiFetch, isLoggedIn } from "@/lib/auth";
+import { apiFetch, isLoggedIn, isAdmin } from "@/lib/auth";
+import DeletePatientButton from "@/components/DeletePatientButton";
 
 export default function Report() {
   const { patientId } = useParams();
@@ -969,6 +970,12 @@ export default function Report() {
             </li>
           </ol>
         </div>
+
+        {isAdmin() && (
+          <div className="mt-10 border-t border-gray-200 pt-6 px-4 sm:px-6">
+            <DeletePatientButton patientId={patientId} patientName={`${patient.firstname} ${patient.lastname}`} />
+          </div>
+        )}
       </div>
 
       {/* Add custom CSS for animations */}

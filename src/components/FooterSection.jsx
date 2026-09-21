@@ -4,8 +4,9 @@ import React from "react";
 export const FooterSection = () => {
   // Quick links data
   const quickLinks = [
-    { name: "Home", href: "#" },
-    { name: "Patients", href: "#" },
+    { name: "Home", href: "/" },
+    { name: "Patients", href: "/patients" },
+    { name: "Privacy & data protection", href: "/privacy" },
   ];
 
   // Services data
