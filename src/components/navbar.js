@@ -20,10 +20,7 @@ const navigation = [
 const accountNavigation = [{ name: 'Security', href: '/account/security' }];
 
 // Admin-only links; shown once the stored profile says role === 'admin'.
-const adminNavigation = [
-  { name: 'Analytics', href: '/analytics' },
-  { name: 'Audit log', href: '/admin/audit' },
-];
+const adminNavigation = [{ name: 'Analytics', href: '/analytics' }];
 
 export default function Navbar() {
   const router = useRouter();
