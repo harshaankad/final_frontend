@@ -9,7 +9,7 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { logout } from '@/lib/auth';
+import { logout, isLoggedIn as hasSession, isAdmin as hasAdminRole } from '@/lib/auth';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -25,14 +25,10 @@ export default function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-    setIsLoggedIn(!!token);
-    try {
-      const profile = JSON.parse(localStorage.getItem('doctorData') || 'null');
-      setIsAdmin(!!token && profile?.role === 'admin');
-    } catch {
-      setIsAdmin(false);
-    }
+    // The session itself is an httpOnly cookie; the stored profile is only a
+    // UI hint. The server answers 401 if the cookie is gone.
+    setIsLoggedIn(hasSession());
+    setIsAdmin(hasAdminRole());
   }, []);
 
   const links = isAdmin ? [...navigation, ...adminNavigation] : navigation;

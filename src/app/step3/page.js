@@ -7,7 +7,7 @@ import Region from '@/components/region';
 import Example from "@/components/navbar";
 import Stepper from "@/components/Stepper";
 import { useForm } from '../../context/context';
-import { API_BASE } from "@/lib/config";
+import { apiFetch, isLoggedIn } from "@/lib/auth";
 
 export default function Step3() {
   const router = useRouter();
@@ -29,12 +29,6 @@ export default function Step3() {
     setSiteOfInfection,
   } = useForm();
 
-  const getAuthToken = () => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("authToken");
-    }
-    return null;
-  };
 
   const validateForm = () => {
     if (!firstName || !lastName || !age || !gender || !duration || !previousTreatment) {
@@ -62,9 +56,7 @@ export default function Step3() {
       return;
     }
 
-    const token = getAuthToken();
-
-    if (!token) {
+    if (!isLoggedIn()) {
       alert("Session expired. Please login again.");
       router.push("/login");
       return;
@@ -88,17 +80,9 @@ export default function Step3() {
     });
 
     try {
-      const response = await fetch(`${API_BASE}/create-patient`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-        credentials: "include",
-      });
+      const response = await apiFetch("/create-patient", { method: "POST", body: formData });
 
       if (response.status === 401) {
-        localStorage.removeItem("authToken");
         alert("Session expired. Please login again.");
         router.push("/login");
         return;

@@ -6,6 +6,9 @@
 //   NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxx
 // The Razorpay key must match the mode (test/live) of the backend's keys.
 
-export const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || "https://dermatology-backend-8xqf.onrender.com").replace(/\/$/, "");
+// Sessions are httpOnly cookies with SameSite=Lax, so the API must be served
+// from the same site as the frontend: api.ankad.in for www.ankad.in. The old
+// onrender.com hostname is cross-site and browsers will not send the cookie.
+export const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || "https://api.ankad.in").replace(/\/$/, "");
 export const API_BASE = `${API_ORIGIN}/api`;
 export const RAZORPAY_KEY_ID = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_live_SUL8Trxygv1AJ0";

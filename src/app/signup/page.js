@@ -3,9 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import axios from 'axios';
 import Spinner from '@/components/Spinner'; // <-- make sure path is correct
-import { API_BASE } from "@/lib/config";
+import { apiFetch } from "@/lib/auth";
 import { setSignupDraft } from "@/lib/signupDraft";
 
 const PASSWORD_MIN = 10;
@@ -35,15 +34,17 @@ export default function Signup() {
     e.preventDefault();
     setLoading(true); // start loading
     try {
-      await axios.post(`${API_BASE}/auth/send-otp`, {
-        email: formData.email,
-      });
+      const res = await apiFetch("/auth/send-otp", { method: "POST", body: { email: formData.email } });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to send OTP");
+      }
 
       // Kept in memory only (it includes the password), never in web storage.
       setSignupDraft(formData);
       router.push(`/verification-code`);
     } catch (error) {
-      alert(error.response?.data?.error || 'Failed to send OTP');
+      alert(error.message || 'Failed to send OTP');
     } finally {
       setLoading(false); // stop loading
     }

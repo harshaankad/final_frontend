@@ -5,7 +5,8 @@ import Link from "next/link";
 import Example from "@/components/navbar";
 import Stepper from "@/components/Stepper";
 import { useForm } from '../../context/context';
-import { API_BASE, RAZORPAY_KEY_ID } from "@/lib/config";
+import { RAZORPAY_KEY_ID } from "@/lib/config";
+import { apiFetch, isLoggedIn } from "@/lib/auth";
 
 export default function Step4() {
   const router = useRouter();
@@ -37,12 +38,6 @@ export default function Step4() {
     }
   }, [firstName, lastName]);
 
-  const getAuthToken = () => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("authToken");
-    }
-    return null;
-  };
 
   const handlePayChange = (e) => {
     setPayData(prev => ({
@@ -66,8 +61,7 @@ export default function Step4() {
       return;
     }
 
-    const token = getAuthToken();
-    if (!token) {
+    if (!isLoggedIn()) {
       alert("Session expired. Please login again.");
       router.push("/login");
       return;
@@ -76,19 +70,10 @@ export default function Step4() {
     setIsProcessing(true);
 
     try {
-      const orderResponse = await fetch(`${API_BASE}/create-payment`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        // The fee is fixed server-side; only the patient is sent.
-        body: JSON.stringify({ patientId }),
-        credentials: "include",
-      });
+      // The fee is fixed server-side; only the patient is sent.
+      const orderResponse = await apiFetch("/create-payment", { method: "POST", body: { patientId } });
 
       if (orderResponse.status === 401) {
-        localStorage.removeItem("authToken");
         alert("Session expired. Please login again.");
         router.push("/login");
         return;
@@ -111,18 +96,13 @@ export default function Step4() {
         theme: { color: '#285430' },
         handler: async (response) => {
           try {
-            const verifyResponse = await fetch(`${API_BASE}/verify-payment`, {
+            const verifyResponse = await apiFetch("/verify-payment", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
+              body: {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-              }),
-              credentials: "include",
+              },
             });
 
             const verifyData = await verifyResponse.json();

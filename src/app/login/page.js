@@ -4,8 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Spinner from "@/components/Spinner";
 import MfaPromptModal from "@/components/MfaPromptModal";
-import { API_BASE } from "@/lib/config";
-import { setMfaToken, setSession, clearSession } from "@/lib/auth";
+import { apiFetch, setMfaPending, setSession, clearSession } from "@/lib/auth";
 
 export default function Login() {
   const router = useRouter();
@@ -28,12 +27,9 @@ export default function Login() {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/auth/login`, {
+      const response = await apiFetch("/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
+        body: { email, password },
       });
 
       const data = await response.json();
@@ -47,14 +43,15 @@ export default function Login() {
       clearSession();
 
       if (data.mfaRequired) {
-        // Two-step verification is on: the session is issued after the code.
-        setMfaToken(data.mfaToken);
+        // Two-step verification is on: the server set a short-lived MFA
+        // cookie; the session cookie is issued after the code.
+        setMfaPending();
         router.push("/mfa");
         return;
       }
 
-      // Logged in. MFA is off for this account, so nudge before continuing.
-      setSession(data.token, data.doctor);
+      // Logged in (session cookie set). MFA is off, so nudge before continuing.
+      setSession(data.doctor);
       if (data.mfaPrompt) {
         setShowMfaPrompt(true);
         return;

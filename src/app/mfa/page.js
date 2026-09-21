@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Spinner from "@/components/Spinner";
 import CodeInput from "@/components/CodeInput";
-import { API_BASE } from "@/lib/config";
-import { getMfaToken, setSession, clearSession } from "@/lib/auth";
+import { apiFetch, hasMfaPending, setSession, clearSession } from "@/lib/auth";
 
 // Login step 2: the authenticator code (or a backup code) → session.
 export default function MfaVerify() {
@@ -18,7 +17,7 @@ export default function MfaVerify() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!getMfaToken()) router.replace("/login");
+    if (!hasMfaPending()) router.replace("/login");
   }, [router]);
 
   const submit = async (e) => {
@@ -31,13 +30,10 @@ export default function MfaVerify() {
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/auth/mfa/verify`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getMfaToken()}` },
-        body: JSON.stringify({ code: value }),
-      });
+      const res = await apiFetch("/auth/mfa/verify", { method: "POST", body: { code: value } });
       const data = await res.json();
       if (res.status === 401 && data.error?.includes("token")) {
+        // MFA cookie expired (5 minutes) — start over.
         clearSession();
         router.replace("/login");
         return;
@@ -48,7 +44,7 @@ export default function MfaVerify() {
         setBackupCode("");
         return;
       }
-      setSession(data.token, data.doctor);
+      setSession(data.doctor);
       router.push("/patients");
     } catch {
       setError("Something went wrong. Please try again.");

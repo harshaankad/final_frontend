@@ -9,7 +9,7 @@ import Example from '@/components/navbar';
 import ImageEditor from '@/components/ImageEditor';
 import Spinner from '@/components/Spinner';
 import { Download, CheckCircle2, Circle } from 'lucide-react';
-import { API_BASE } from "@/lib/config";
+import { apiFetch, isLoggedIn } from "@/lib/auth";
 
 export default function AdminGenerate() {
   const { patientId } = useParams();
@@ -26,29 +26,21 @@ export default function AdminGenerate() {
   const [dermoscopeSavedStates, setDermoscopeSavedStates] = useState([]);
   const [formError, setFormError] = useState('');
 
-  const BASE_URL = API_BASE;
 
-  const getAuthToken = () => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('authToken');
-    }
-    return null;
-  };
 
   useEffect(() => {
     const fetchPatient = async () => {
-      const token = getAuthToken();
-      if (!token) {
+      if (!isLoggedIn()) {
         router.push('/login');
         return;
       }
 
       try {
-        const res = await fetch(`${BASE_URL}/patient-details/${patientId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await apiFetch(`/patient-details/${patientId}`);
+        if (res.status === 401) {
+          router.push('/login');
+          return;
+        }
 
         const data = await res.json();
 
@@ -126,8 +118,7 @@ export default function AdminGenerate() {
   const handleGenerate = async () => {
     setFormError('');
 
-    const token = getAuthToken();
-    if (!token) {
+    if (!isLoggedIn()) {
       router.push('/login');
       return;
     }
@@ -160,13 +151,7 @@ export default function AdminGenerate() {
     });
 
     try {
-      const res = await fetch(`${BASE_URL}/admin-generate-report/${patientId}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
+      const res = await apiFetch(`/admin-generate-report/${patientId}`, { method: 'POST', body: formData });
 
       const result = await res.json();
 

@@ -4,8 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Spinner from "@/components/Spinner";
 import CodeInput from "@/components/CodeInput";
-import { API_BASE } from "@/lib/config";
-import { getToken, setSession, clearSession } from "@/lib/auth";
+import { apiFetch, isLoggedIn, setSession, clearSession } from "@/lib/auth";
 
 // Authenticator enrolment for a logged-in doctor: turning MFA on for the
 // first time (from the post-login prompt) or moving to a new phone.
@@ -19,14 +18,12 @@ export default function MfaSetup() {
   const [loading, setLoading] = useState(true);
   const [showKey, setShowKey] = useState(false);
 
-  const bearer = () => getToken();
   // Each call to /mfa/setup mints a new secret; guard against React Strict
   // Mode's double effect in dev so the QR shown matches the pending secret.
   const started = useRef(false);
 
   useEffect(() => {
-    const token = bearer();
-    if (!token) {
+    if (!isLoggedIn()) {
       router.replace("/login");
       return;
     }
@@ -34,10 +31,7 @@ export default function MfaSetup() {
     started.current = true;
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/auth/mfa/setup`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await apiFetch("/auth/mfa/setup", { method: "POST" });
         const data = await res.json();
         if (res.status === 401) {
           clearSession();
@@ -63,19 +57,15 @@ export default function MfaSetup() {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/auth/mfa/confirm`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${bearer()}` },
-        body: JSON.stringify({ code }),
-      });
+      const res = await apiFetch("/auth/mfa/confirm", { method: "POST", body: { code } });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "That code didn't match.");
         setCode("");
         return;
       }
-      // Session is live from here; show backup codes once before moving on.
-      setSession(data.token, data.doctor);
+      // Session cookie rotated by the server; show backup codes once.
+      setSession(data.doctor);
       setBackupCodes(data.backupCodes);
     } catch {
       setError("Something went wrong. Please try again.");

@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Example from "@/components/navbar";
-import { API_BASE } from "@/lib/config";
+import { apiFetch, isLoggedIn } from "@/lib/auth";
 
 // Skeleton Loading Component
 const PatientSkeleton = ({ isAdmin }) => (
@@ -67,7 +67,6 @@ export default function PatientsPage() {
   const observerRef = useRef();
   const router = useRouter();
 
-  const BASE_URL = API_BASE;
 
   const regularEndpoints = {
     all: "/all-patients",
@@ -81,23 +80,8 @@ export default function PatientsPage() {
     completed: "/admin-done",
   };
 
-  const getAuthToken = () => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("authToken") || localStorage.getItem("token");
-    }
-    return null;
-  };
-
-  const removeAuthTokens = () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("token");
-    }
-  };
-
   const checkAuthentication = () => {
-    const token = getAuthToken();
-    if (!token) {
+    if (!isLoggedIn()) {
       router.push("/login");
       return false;
     } else {
@@ -107,21 +91,15 @@ export default function PatientsPage() {
   };
 
   const checkAdminStatus = async () => {
-    const token = getAuthToken();
-    if (!token) {
+    if (!isLoggedIn()) {
       router.push("/login");
       return;
     }
 
     try {
-      const res = await fetch(`${BASE_URL}/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await apiFetch("/me");
 
       if (res.status === 401) {
-        removeAuthTokens();
         router.push("/login");
         return;
       }
@@ -139,10 +117,8 @@ export default function PatientsPage() {
     setLoading(true);
     setError(null);
 
-    const token = getAuthToken();
-    if (!token) {
-      setError("No authentication token found. Please log in again.");
-      removeAuthTokens();
+    if (!isLoggedIn()) {
+      setError("Please log in again.");
       router.push("/login");
       return;
     }
@@ -152,16 +128,9 @@ export default function PatientsPage() {
         ? adminEndpoints[activeTab]
         : regularEndpoints[activeTab];
 
-      const res = await fetch(BASE_URL + endpoint, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: "include",
-      });
+      const res = await apiFetch(endpoint);
 
       if (res.status === 401) {
-        removeAuthTokens();
         setError("Session expired. Please log in again.");
         router.push("/login");
         return;
@@ -246,8 +215,7 @@ export default function PatientsPage() {
   }, [activeTab, isAdmin, loadingAuth]);
 
   useEffect(() => {
-    const token = getAuthToken();
-    if (!token && !loadingAuth) {
+    if (!isLoggedIn() && !loadingAuth) {
       router.push("/login");
     }
   }, [loadingAuth, router]);
@@ -338,8 +306,7 @@ export default function PatientsPage() {
     );
   }
 
-  const token = getAuthToken();
-  if (!token) {
+  if (!isLoggedIn()) {
     return null;
   }
 

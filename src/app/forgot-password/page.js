@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Spinner from "@/components/Spinner";
-import { API_BASE } from "@/lib/config";
+import { apiFetch } from "@/lib/auth";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -16,11 +16,7 @@ export default function ForgotPassword() {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/auth/resetpasswordtoken`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      const res = await apiFetch("/auth/resetpasswordtoken", { method: "POST", body: { email } });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Could not send the reset email.");

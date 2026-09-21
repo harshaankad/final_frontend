@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Spinner from "@/components/Spinner";
-import { API_BASE } from "@/lib/config";
+import { apiFetch } from "@/lib/auth";
 
 const MIN_LENGTH = 10;
 
@@ -30,11 +30,7 @@ export default function ResetPassword() {
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/auth/resetpassword`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password, confirmPassword }),
-      });
+      const res = await apiFetch("/auth/resetpassword", { method: "POST", body: { token, password, confirmPassword } });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Could not reset the password.");

@@ -10,9 +10,7 @@ import TrendChart from "@/components/charts/TrendChart";
 import ColumnChart from "@/components/charts/ColumnChart";
 import BarList from "@/components/charts/BarList";
 import { formatBucket, formatDate, formatHours, formatINR, formatInt } from "@/components/charts/utils";
-import { API_BASE } from "@/lib/config";
-
-const BASE_URL = API_BASE;
+import { apiFetch, isLoggedIn } from "@/lib/auth";
 
 const RANGES = [
   { key: "30d", label: "Last 30 days", previous: "previous 30 days" },
@@ -31,20 +29,15 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const getAuthToken = () =>
-    typeof window !== "undefined" ? localStorage.getItem("authToken") || localStorage.getItem("token") : null;
-
   // Admin-only: anyone else is sent to their patients list.
   useEffect(() => {
-    const token = getAuthToken();
-    if (!token) {
+    if (!isLoggedIn()) {
       router.replace("/login");
       return;
     }
-    fetch(`${BASE_URL}/me`, { headers: { Authorization: `Bearer ${token}` } })
+    apiFetch("/me")
       .then(async (res) => {
         if (res.status === 401) {
-          localStorage.removeItem("authToken");
           router.replace("/login");
           return;
         }
@@ -56,14 +49,11 @@ export default function AnalyticsPage() {
   }, [router]);
 
   const load = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) return;
+    if (!isLoggedIn()) return;
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${BASE_URL}/admin-analytics?range=${range}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await apiFetch(`/admin-analytics?range=${range}`);
       const d = await res.json();
       if (!res.ok || !d.success) throw new Error(d.message || d.error || "Failed to load analytics");
       setData(d);

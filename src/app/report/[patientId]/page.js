@@ -5,7 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Example from '@/components/navbar';
 import Spinner from '@/components/Spinner';
-import { API_BASE, API_ORIGIN } from "@/lib/config";
+import { API_ORIGIN } from "@/lib/config";
+import { apiFetch, isLoggedIn } from "@/lib/auth";
 
 export default function Report() {
   const { patientId } = useParams();
@@ -21,14 +22,7 @@ export default function Report() {
   const [downloadError, setDownloadError] = useState('');
   const reportRef = useRef(null);
 
-  const BASE_URL = API_BASE;
 
-  const getAuthToken = () => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('authToken');
-    }
-    return null;
-  };
 
   // Function to construct full image URL
   const getImageUrl = (imagePath) => {
@@ -547,18 +541,16 @@ export default function Report() {
   // Image links in the response are signed and expire after ~30 minutes, so
   // this is also called again right before exporting.
   const fetchPatientData = async () => {
-    const token = getAuthToken();
-    if (!token) {
+    if (!isLoggedIn()) {
       router.push('/login');
       return null;
     }
 
-    const res = await fetch(`${BASE_URL}/patient-details/${patientId}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const res = await apiFetch(`/patient-details/${patientId}`);
+    if (res.status === 401) {
+      router.push('/login');
+      return null;
+    }
 
     const data = await res.json();
 

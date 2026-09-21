@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import Spinner from "@/components/Spinner";
 import CodeInput from "@/components/CodeInput";
-import { API_BASE } from "@/lib/config";
+import { apiFetch } from "@/lib/auth";
 import { getSignupDraft, clearSignupDraft } from "@/lib/signupDraft";
 
 const OTP_LENGTH = 6;
@@ -43,13 +42,15 @@ function VerificationCodeContent() {
     try {
       setLoading(true);
       setError("");
-      await axios.post(`${API_BASE}/auth/send-otp`, {
-        email: signupData.email,
-      });
+      const res = await apiFetch("/auth/send-otp", { method: "POST", body: { email: signupData.email } });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to resend OTP.");
+      }
       setResendCooldown(30);
       setOtp("");
     } catch (err) {
-      setError(err.response?.data?.error || "Failed to resend OTP.");
+      setError(err.message || "Failed to resend OTP.");
     } finally {
       setLoading(false);
     }
@@ -66,11 +67,15 @@ function VerificationCodeContent() {
 
     try {
       setLoading(true);
-      await axios.post(`${API_BASE}/auth/verify-otp`, { ...signupData, otp });
+      const res = await apiFetch("/auth/verify-otp", { method: "POST", body: { ...signupData, otp } });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "OTP verification failed.");
+      }
       clearSignupDraft();
       router.push("/login");
     } catch (err) {
-      setError(err.response?.data?.error || "OTP verification failed.");
+      setError(err.message || "OTP verification failed.");
       setOtp("");
     } finally {
       setLoading(false);
