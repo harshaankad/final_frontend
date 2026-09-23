@@ -686,7 +686,30 @@ export default function Report() {
       ? report.editedDermoscopePhotos 
       : [];
 
-    if (!hasNakedEyePhoto && dermoscopePhotos.length === 0) return null;
+    // Images are deleted once the retention period is up; say so rather than
+    // quietly rendering nothing, so nobody thinks the report is broken.
+    if (!hasNakedEyePhoto && dermoscopePhotos.length === 0) {
+      if (!report.imagesPurgedAt) return null;
+      const purgedOn = new Date(report.imagesPurgedAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+      return (
+        <div className="mt-8">
+          <div className="border-t border-gray-300 pt-6">
+            <h3 className="text-lg sm:text-xl font-semibold text-center mb-6 tracking-wide uppercase text-gray-800">
+              Medical Images
+            </h3>
+            <div className="rounded-xl border border-gray-200 bg-gray-50 px-5 py-6 text-center">
+              <p className="text-sm text-gray-700 font-medium">
+                The images for this case were deleted on {purgedOn} under our data retention policy.
+              </p>
+              <p className="text-sm text-gray-500 mt-1.5">
+                Clinical and dermoscopic images are kept for a limited period after the report is issued.
+                The findings and impression below remain part of the permanent record.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="mt-8 space-y-8">
