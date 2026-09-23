@@ -486,7 +486,7 @@ export default function Report() {
         new Paragraph({
           children: [
             new TextRun({
-              text: '5. Clinical and dermoscopic images (“the data”) submitted to DermaDrishti Dermoscopy Reporting Services will be securely stored for a period of 3 months from the date of submission. Dermatologists may request retrieval of the data within this period by contacting: ',
+              text: '5. Clinical and dermoscopic images (“the data”) submitted to DermaDrishti Dermoscopy Reporting Services are securely stored for a period of 3 months from the date this report is issued, after which they are permanently deleted. The written report is retained. Dermatologists may request retrieval of the images within this period by contacting: ',
               size: 20, color: "000000"
             }),
             new TextRun({ text: 'drbsankad@gmail.com', size: 20, color: "000000", bold: true })
@@ -989,7 +989,7 @@ export default function Report() {
               DermaDrishti Dermoscopy Reporting Services shall not be held responsible for any inappropriate or incorrect treatment decisions made solely on the basis of the dermoscopic impressions provided.
             </li>
             <li>
-              Clinical and dermoscopic images (&ldquo;the data&rdquo;) submitted to DermaDrishti Dermoscopy Reporting Services will be securely stored for a period of 3 months from the date of submission. Dermatologists may request retrieval of the data within this period by contacting: <span className="font-medium">drbsankad@gmail.com</span>
+              Clinical and dermoscopic images (&ldquo;the data&rdquo;) submitted to DermaDrishti Dermoscopy Reporting Services are securely stored for a period of 3 months from the date this report is issued, after which they are permanently deleted. The written report is retained. Dermatologists may request retrieval of the images within this period by contacting: <span className="font-medium">drbsankad@gmail.com</span>
             </li>
           </ol>
         </div>

@@ -74,7 +74,7 @@ export default function PrivacyPage() {
         <H2>How long we keep it</H2>
         <UL>
           <li><strong>Abandoned submissions</strong> (uploaded but never paid for) are deleted automatically after 7 days.</li>
-          <li><strong>Original photographs</strong> are deleted automatically 90 days after the report is issued; the annotated copies on the report remain as the medical record.</li>
+          <li><strong>All photographs for a case</strong> — the originals uploaded by the doctor and the annotated copies on the report — are deleted automatically 90 days after the report is issued. The written report (findings, impression and patient details) is retained as the medical record.</li>
           <li><strong>Completed reports</strong> are retained as medical records for the period required by applicable medical-records regulations, and then deleted.</li>
           <li><strong>Doctor accounts</strong> are kept until the doctor asks us to close them.</li>
           <li><strong>Audit logs</strong> are kept for security and legal purposes.</li>
