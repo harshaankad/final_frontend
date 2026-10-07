@@ -16,6 +16,7 @@ jobs:
       - run: npm ci
       # Fail the build on any high/critical advisory in runtime dependencies.
       - run: npm audit --omit=dev --audit-level=high
+      - run: npm test
       - run: npm run build
         env:
           NEXT_PUBLIC_API_URL: https://api.ankad.in

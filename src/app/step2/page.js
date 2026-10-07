@@ -6,8 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from '../../context/context';
 import Example from "@/components/navbar";
 import Stepper from "@/components/Stepper";
-
-const MAX_FILE_SIZE_MB = 10;
+import { MAX_PHOTO_SIZE_MB, PHOTO_ACCEPT, photoError } from "@/lib/photoUpload";
 
 export default function Step2() {
   const router = useRouter();
@@ -22,17 +21,10 @@ export default function Step2() {
     dermoscopePreviews, setDermoscopePreviews,
   } = useForm();
 
-  // The server re-checks the real file type; this just gives a quick,
-  // friendly message for obvious mismatches.
-  const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
-
   const validateFileSize = (file) => {
-    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-      setError(`"${file.name}" exceeds ${MAX_FILE_SIZE_MB}MB limit.`);
-      return false;
-    }
-    if (file.type && !ACCEPTED_TYPES.includes(file.type)) {
-      setError(`"${file.name}" is not a supported image. Please use a JPEG, PNG or WebP photo.`);
+    const message = photoError(file);
+    if (message) {
+      setError(message);
       return false;
     }
     return true;
@@ -137,11 +129,11 @@ export default function Step2() {
                 Please upload a clear clinical photo of the affected area.
               </span>
               <span className="text-gray-500 text-xs sm:text-sm mb-3">
-                Max file size: {MAX_FILE_SIZE_MB}MB
+                Max file size: {MAX_PHOTO_SIZE_MB}MB
               </span>
               <input
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                accept={PHOTO_ACCEPT}
                 onChange={(e) => handleFileChange(e, 'naked')}
                 className="block w-full max-w-md text-sm text-gray-600 rounded-lg border border-dashed border-gray-300 bg-gray-50 p-2.5 transition-colors duration-150 hover:border-[#5F8D4E]/60 focus:outline-none focus:border-[#5F8D4E] focus:ring-2 focus:ring-[#5F8D4E]/20 file:mr-4 file:h-9 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#5F8D4E] file:text-white file:cursor-pointer hover:file:bg-[#4a7a3a] file:transition-colors"
               />
@@ -179,11 +171,11 @@ export default function Step2() {
                 Please upload one or more dermoscope photos of the affected area. You can select multiple files at once or add them one by one.
               </span>
               <span className="text-gray-500 text-xs sm:text-sm mb-3">
-                Max file size: {MAX_FILE_SIZE_MB}MB per image
+                Max file size: {MAX_PHOTO_SIZE_MB}MB per image
               </span>
               <input
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+                accept={PHOTO_ACCEPT}
                 multiple
                 onChange={(e) => handleFileChange(e, 'dermoscope')}
                 className="block w-full max-w-md text-sm text-gray-600 rounded-lg border border-dashed border-gray-300 bg-gray-50 p-2.5 transition-colors duration-150 hover:border-[#5F8D4E]/60 focus:outline-none focus:border-[#5F8D4E] focus:ring-2 focus:ring-[#5F8D4E]/20 file:mr-4 file:h-9 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#5F8D4E] file:text-white file:cursor-pointer hover:file:bg-[#4a7a3a] file:transition-colors"
