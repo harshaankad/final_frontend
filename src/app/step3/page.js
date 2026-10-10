@@ -88,17 +88,20 @@ export default function Step3() {
         return;
       }
 
-      const data = await response.json();
+      // A proxy error page (502/503/504) is HTML, not JSON.
+      const data = await response.json().catch(() => null);
 
-      if (data.success) {
+      if (data?.success) {
         setPatientId(data.data._id);
         router.push("/step4");
       } else {
-        alert(data.message || "Failed to create patient. Please try again.");
+        alert(data?.message || `The server could not save this patient (error ${response.status}). Please try again in a minute.`);
       }
     } catch (err) {
+      // No response at all: the connection dropped mid-upload, or the server
+      // went down and its error page carried no CORS headers.
       console.error("Error creating patient:", err);
-      alert("Something went wrong while creating patient.");
+      alert("The upload was interrupted before the server replied. Please check your internet connection and try again in a minute.");
     } finally {
       setLoading(false);
     }
